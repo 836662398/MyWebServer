@@ -4,6 +4,8 @@
 
 #include "channel.h"
 
+#include <sstream>
+
 #include "Utility/logging.h"
 
 // for logging
@@ -11,6 +13,10 @@ static std::string unit_name = "Channel";
 
 Channel::Channel(EventLoop *loop, int fd)
     : loop_(loop), fd_(fd), events_(0), revents_(0) {}
+
+Channel::~Channel() {
+    // assert(!loop_->HasChannel());
+}
 
 void Channel::HandleEvent() {
     if (revents_ & EPOLLHUP) {
@@ -29,11 +35,57 @@ void Channel::HandleEvent() {
     }
 }
 
-void Channel::Remove() {
-    //TODO
-    //loop_->RemoveChannel(this);
+void Channel::EnableReading() {
+    auto op = (events_ == kNoneEvent ? EPOLL_CTL_ADD : EPOLL_CTL_MOD);
+    events_ |= kReadEvent;
+    Update(op);
 }
-void Channel::Update() {
-    //TODO
-    //loop_->UpdateChannel(this);
+void Channel::EnableWriting() {
+    auto op = (events_ == kNoneEvent ? EPOLL_CTL_ADD : EPOLL_CTL_MOD);
+    events_ |= kWriteEvent;
+    Update(op);
+}
+void Channel::DisableReading() {
+    events_ &= ~kReadEvent;
+    auto op = (events_ == kNoneEvent ? EPOLL_CTL_DEL : EPOLL_CTL_MOD);
+    Update(op);
+}
+void Channel::DisableWriting() {
+    events_ &= ~kWriteEvent;
+    auto op = (events_ == kNoneEvent ? EPOLL_CTL_DEL : EPOLL_CTL_MOD);
+    Update(op);
+}
+void Channel::DisableAll() {
+    events_ = kNoneEvent;
+    Update(EPOLL_CTL_DEL);
+}
+
+void Channel::Remove() {
+    // TODO
+    // loop_->RemoveChannel(this);
+}
+void Channel::Update(int operation) {
+    // TODO
+    // loop_->UpdateChannel(this, operation);
+}
+
+std::string Channel::ReventsToString() const {
+    return EventsToString(fd_, revents_);
+}
+
+std::string Channel::EventsToString() const {
+    return EventsToString(fd_, events_);
+}
+
+std::string Channel::EventsToString(int fd, int ev) {
+    std::ostringstream oss;
+    oss << "fd " << fd << ": ";
+    if (ev & EPOLLIN) oss << "IN ";
+    if (ev & EPOLLPRI) oss << "PRI ";
+    if (ev & EPOLLOUT) oss << "OUT ";
+    if (ev & EPOLLHUP) oss << "HUP ";
+    if (ev & EPOLLRDHUP) oss << "RDHUP ";
+    if (ev & EPOLLERR) oss << "ERR ";
+
+    return oss.str();
 }

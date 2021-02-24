@@ -13,7 +13,7 @@ add_executable(MyWebServer
         Utility/timestamp.h
         Utility/types.h
         Net/sock_addr.cpp Net/sock_addr.h
-        Utility/logging.cpp Utility/logging.h Net/socket.cpp Net/socket.h Net/channel.cpp Net/channel.h)
+        Utility/logging.cpp Utility/logging.h Net/socket.cpp Net/socket.h Net/channel.cpp Net/channel.h Net/epoller.cpp Net/epoller.h)
 
 target_link_libraries(
         MyWebServer

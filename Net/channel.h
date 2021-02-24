@@ -18,7 +18,7 @@ class Channel : noncopyable {
     using EventCallback = std::function<void()>;
 
     Channel(EventLoop* loop, int fd);
-    ~Channel() {};
+    ~Channel();
 
     void set_read_callback_(EventCallback cb) { read_callback_ = cb; }
     void set_write_callback_(EventCallback cb) { write_callback_ = cb; }
@@ -31,37 +31,27 @@ class Channel : noncopyable {
     int set_revents(int revent) { revents_ = revent; }
     EventLoop* loop() { return loop_; }
 
-    void EnableReading() {
-        events_ |= kReadEvent;
-        Update();
-    }
-    void EnableWriting() {
-        events_ |= kWriteEvent;
-        Update();
-    }
-    void DisableReading() {
-        events_ &= ~kReadEvent;
-        Update();
-    }
-    void DisableWriting() {
-        events_ &= ~kWriteEvent;
-        Update();
-    }
-    void DisableAll() {
-        events_ &= kNoneEvent;
-        Update();
-    }
+    void EnableReading();
+    void EnableWriting();
+    void DisableReading();
+    void DisableWriting();
+    void DisableAll();
     bool IsReading() { return events_ & kReadEvent; }
     bool IsWriting() { return events_ & kWriteEvent; }
 
     void Remove();
 
-   private:
-    void Update();
+    // for debug
+    std::string EventsToString() const;
+    std::string ReventsToString() const;
 
+   private:
     static const int kNoneEvent = 0;
     static const int kReadEvent = EPOLLIN | EPOLLPRI;
     static const int kWriteEvent = EPOLLOUT;
+
+    void Update(int operation);
+    static std::string EventsToString(int fd, int ev);
 
     EventLoop* loop_;
     const int fd_;
