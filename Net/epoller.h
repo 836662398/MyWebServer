@@ -11,6 +11,7 @@
 
 struct epoll_event;
 
+// Wrapper of epoll
 class Epoller : noncopyable{
    public:
     using ChannelList = std::vector<Channel*>;

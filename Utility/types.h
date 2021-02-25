@@ -5,6 +5,17 @@
 #ifndef MYWEBSERVER_TYPES_H
 #define MYWEBSERVER_TYPES_H
 
+#include <sstream>
+
+// convert std::thread::id to int
+int IdToInt(std::thread::id id){
+    std::stringstream ss;
+    ss << id;
+    return stoi(ss.str());
+}
+
+
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 

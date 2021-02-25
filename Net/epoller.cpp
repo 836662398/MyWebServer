@@ -32,7 +32,7 @@ void Epoller::UpdateChannel(Channel *channel, int operation) {
         fd2channel_[fd] = channel;
     } else if (operation == EPOLL_CTL_MOD)
         assert(channels_.find(fd) != channels_.end());
-    else if (operation == EPOLL_CTL_DEL){
+    else if (operation == EPOLL_CTL_DEL) {
         assert(channels_.find(fd) != channels_.end());
         fd2channel_.erase(fd);
     }
@@ -49,9 +49,9 @@ void Epoller::RemoveChannel(Channel *channel) {
     int fd = channel->fd();
     assert(fd2channel_[fd] == channel);
     UpdateChannel(channel, EPOLL_CTL_DEL);
-    auto n = fd2channel_.erase(fd);
-    assert(n == 1);
-    (void)n;
+    if (fd2channel_.erase(fd) != 1) {
+        FATAL("RemoveChannel failed to erase.");
+    }
 }
 
 Timestamp Epoller::Epoll(int timeout_ms,

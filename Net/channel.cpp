@@ -6,6 +6,7 @@
 
 #include <sstream>
 
+#include "Net/event_loop.h"
 #include "Utility/logging.h"
 
 // for logging
@@ -61,12 +62,10 @@ void Channel::DisableAll() {
 }
 
 void Channel::Remove() {
-    // TODO
-    // loop_->RemoveChannel(this);
+    loop_->RemoveChannel(this);
 }
 void Channel::Update(int operation) {
-    // TODO
-    // loop_->UpdateChannel(this, operation);
+    loop_->UpdateChannel(this, operation);
 }
 
 std::string Channel::ReventsToString() const {
