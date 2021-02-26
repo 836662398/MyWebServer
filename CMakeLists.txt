@@ -12,7 +12,7 @@ include_directories(${PROJECT_SOURCE_DIR})
 add_subdirectory(Utility)
 add_subdirectory(Net)
 
-add_executable(MyWebServer main.cpp Utility/logging.cpp)
+add_executable(MyWebServer main.cpp)
 target_link_libraries(MyWebServer lib_net)
 
 

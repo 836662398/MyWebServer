@@ -1,5 +1,5 @@
 set(UTILITY_SRCS
-    logging.cpp
+
     types.cpp
         )
 
