@@ -16,7 +16,9 @@ Channel::Channel(EventLoop *loop, int fd)
     : loop_(loop), fd_(fd), events_(0), revents_(0) {}
 
 Channel::~Channel() {
-    // assert(!loop_->HasChannel());
+    if (loop_->IsInLoopThread()) {
+        assert(!loop_->HasChannel(this));
+    }
 }
 
 void Channel::HandleEvent() {
@@ -61,12 +63,8 @@ void Channel::DisableAll() {
     Update(EPOLL_CTL_DEL);
 }
 
-void Channel::Remove() {
-    loop_->RemoveChannel(this);
-}
-void Channel::Update(int operation) {
-    loop_->UpdateChannel(this, operation);
-}
+void Channel::Remove() { loop_->RemoveChannel(this); }
+void Channel::Update(int operation) { loop_->UpdateChannel(this, operation); }
 
 std::string Channel::ReventsToString() const {
     return EventsToString(fd_, revents_);

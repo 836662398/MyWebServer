@@ -11,7 +11,7 @@
 #define DEBUG(x) spdlog::get("log")->debug("[{}]{}", unit_name, x)
 #define INFO(x) spdlog::get("log")->info("[{}]{}", unit_name, x)
 #define ERROR(x) spdlog::get("log")->error("[{}]{}", unit_name, x)
-#define FATAL(x) spdlog::get("log")->error("[{}]{} System exit.", unit_name, x);abort()
+#define FATAL(x) spdlog::get("log")->error("[{}]{} System exit.", unit_name, x),abort()
 
 
 

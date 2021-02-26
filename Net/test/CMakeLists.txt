@@ -1,13 +1,12 @@
-cmake_minimum_required(VERSION 3.10)
-
-SET(CMAKE_INSTALL_PREFIX ./build)
-set(CMAKE_CXX_STANDARD 17)
-
 find_package(GTest REQUIRED)
 
-include_directories(../../)
+set(GTEST_LIB GTest::GTest GTest::Main)
 
-add_executable(sock_addr_test gtest_main.cc sock_addr_test.cpp ../sock_addr.cpp)
-target_link_libraries(sock_addr_test GTest::GTest GTest::Main)
+add_executable(sock_addr_test gtest_main.cc sock_addr_test.cpp)
+target_link_libraries(sock_addr_test ${GTEST_LIB} lib_net)
 
-set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+add_executable(event_loop_test gtest_main.cc event_loop_test.cpp )
+target_link_libraries(event_loop_test ${GTEST_LIB} lib_net)
+
+add_executable(event_loop_thread_test gtest_main.cc event_loop_thread_test.cpp)
+target_link_libraries(event_loop_thread_test ${GTEST_LIB} lib_net)

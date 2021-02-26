@@ -4,18 +4,16 @@ project(MyWebServer)
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(spdlog REQUIRED)
+find_package(Threads REQUIRED)
 
-include_directories(./)
 
-add_executable(MyWebServer
-        main.cpp
-        Utility/noncopyable.h
-        Utility/timestamp.h
-        Utility/types.h
-        Net/sock_addr.cpp Net/sock_addr.h
-        Utility/logging.cpp Utility/logging.h Net/socket.cpp Net/socket.h Net/channel.cpp Net/channel.h Net/epoller.cpp Net/epoller.h Net/event_loop.cpp Net/event_loop.h)
+include_directories(${PROJECT_SOURCE_DIR})
 
-target_link_libraries(
-        MyWebServer
-        spdlog::spdlog
-)
+add_subdirectory(Utility)
+add_subdirectory(Net)
+
+add_executable(MyWebServer main.cpp Utility/logging.cpp)
+target_link_libraries(MyWebServer lib_net)
+
+
+

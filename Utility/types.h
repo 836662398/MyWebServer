@@ -5,14 +5,10 @@
 #ifndef MYWEBSERVER_TYPES_H
 #define MYWEBSERVER_TYPES_H
 
-#include <sstream>
+#include <thread>
 
 // convert std::thread::id to int
-int IdToInt(std::thread::id id){
-    std::stringstream ss;
-    ss << id;
-    return stoi(ss.str());
-}
+long long  IdToInt(std::thread::id id);
 
 
 

@@ -38,8 +38,8 @@ EventLoop::EventLoop()
         FATAL(fmt::format("Another EventLoop has existed in this thread {}.",
                           IdToInt(thread_id_)));
     DEBUG(fmt::format("EventLoop created in thread {}", IdToInt(thread_id_)));
-    wakeup_channel_->set_read_callback_(
-        std::bind(&EventLoop::WakeUpReadHandle, this));
+    wakeup_channel_ = std::make_unique<Channel>(this, wakeup_fd_);
+    wakeup_channel_->set_read_callback([this] { WakeUpReadHandle(); });
     wakeup_channel_->EnableReading();
 }
 
@@ -56,7 +56,7 @@ void EventLoop::Loop() {
     // if someone Quit() before Loop()
     quit_flag_ = false;
     looping_ = true;
-    TRACE(fmt::format("EventLoop in thread {} start looping.",
+    INFO(fmt::format("EventLoop in thread {} start looping.",
                       IdToInt(thread_id_)));
     while (!quit_flag_) {
         active_channels_.clear();
@@ -66,13 +66,13 @@ void EventLoop::Loop() {
         }
         HandlePendingCallbacks();
     }
-    TRACE(fmt::format("EventLoop in thread {} stop looping.",
+    INFO(fmt::format("EventLoop in thread {} stop looping.",
                       IdToInt(thread_id_)));
     looping_ = false;
 }
 
 void EventLoop::Quit() {
-    quit_flag_ = false;
+    quit_flag_ = true;
     if (!IsInLoopThread()) {
         WakeUp();
     }
@@ -121,6 +121,7 @@ bool EventLoop::HasChannel(Channel *channel) {
     AssertInLoopThread();
     epoller_->HasChannel(channel);
 }
+
 bool EventLoop::IsInLoopThread() {
     return std::this_thread::get_id() == thread_id_;
 }
@@ -131,7 +132,6 @@ void EventLoop::AssertInLoopThread() {
             IdToInt(thread_id_), IdToInt(std::this_thread::get_id())));
     }
 }
-
 EventLoop *EventLoop::get_thread_local_eventloop() {
     return thread_local_eventloop;
 }
@@ -142,6 +142,7 @@ void EventLoop::WakeUpReadHandle() {
     if (n != 8)
         ERROR(fmt::format("WakeUpReadHandle() read {} bytes instead of 8!", n));
 }
+
 void EventLoop::HandlePendingCallbacks() {
     std::vector<Callback> callbacks;
     pending_callbacks_handling_ = true;

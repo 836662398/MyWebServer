@@ -37,7 +37,6 @@ class Epoller : noncopyable{
     static std::string OperationToString(int operation);
 
     EventLoop* loop_;
-    ChannelMap channels_;
     ChannelMap fd2channel_;
     int epollfd_;
     EventList events_;

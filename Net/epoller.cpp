@@ -28,12 +28,12 @@ void Epoller::UpdateChannel(Channel *channel, int operation) {
     event.data.ptr = channel;
     int fd = channel->fd();
     if (operation == EPOLL_CTL_ADD) {
-        assert(channels_.find(fd) == channels_.end());
+        assert(fd2channel_.find(fd) == fd2channel_.end());
         fd2channel_[fd] = channel;
     } else if (operation == EPOLL_CTL_MOD)
-        assert(channels_.find(fd) != channels_.end());
+        assert(fd2channel_.find(fd) != fd2channel_.end());
     else if (operation == EPOLL_CTL_DEL) {
-        assert(channels_.find(fd) != channels_.end());
+        assert(fd2channel_.find(fd) != fd2channel_.end());
         fd2channel_.erase(fd);
     }
     TRACE(fmt::format("Operation: {}, {}", OperationToString(operation),
@@ -47,10 +47,11 @@ void Epoller::UpdateChannel(Channel *channel, int operation) {
 
 void Epoller::RemoveChannel(Channel *channel) {
     int fd = channel->fd();
-    assert(fd2channel_[fd] == channel);
-    UpdateChannel(channel, EPOLL_CTL_DEL);
-    if (fd2channel_.erase(fd) != 1) {
-        FATAL("RemoveChannel failed to erase.");
+    if(fd2channel_.find(fd) != fd2channel_.end()){
+        UpdateChannel(channel, EPOLL_CTL_DEL);
+        if (fd2channel_.erase(fd) != 1) {
+            FATAL("RemoveChannel failed to erase.");
+        }
     }
 }
 
