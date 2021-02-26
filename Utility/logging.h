@@ -39,6 +39,6 @@ class LOG {
     }
 };
 
-static LOG l = LOG::GetInstance();
+static LOG& l = LOG::GetInstance();
 
 #endif  // MYWEBSERVER_LOGGING_H
