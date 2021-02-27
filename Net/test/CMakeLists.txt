@@ -10,3 +10,6 @@ target_link_libraries(event_loop_test ${GTEST_LIB} lib_net)
 
 add_executable(event_loop_thread_test gtest_main.cc event_loop_thread_test.cpp)
 target_link_libraries(event_loop_thread_test ${GTEST_LIB} lib_net)
+
+add_executable(event_loop_thread_pool_test gtest_main.cc event_loop_thread_pool_test.cpp)
+target_link_libraries(event_loop_thread_pool_test ${GTEST_LIB} lib_net)

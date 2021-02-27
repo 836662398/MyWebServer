@@ -1,5 +1,4 @@
 set(UTILITY_SRCS
-
     types.cpp
         )
 
