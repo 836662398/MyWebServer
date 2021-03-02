@@ -9,6 +9,8 @@
 
 #include "Net/buffer.h"
 #include "Net/callbacks.h"
+#include "Net/channel.h"
+#include "Net/socket.h"
 #include "Net/sock_addr.h"
 #include "Utility/noncopyable.h"
 
@@ -76,8 +78,8 @@ class TcpConnection : noncopyable,
     EventLoop* loop_;
     std::string name_;
     State state_;
-    std::unique_ptr<Socket> socket_;
-    std::unique_ptr<Channel> channel_;
+    Socket socket_;
+    Channel channel_;
     const SockAddress local_addr_;
     const SockAddress peer_addr_;
     // callback when connection is connected and destroyed

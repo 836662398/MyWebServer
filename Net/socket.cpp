@@ -19,7 +19,7 @@ Socket::~Socket() {
     }
 }
 
-void Socket::bind(const SockAddress& localaddr) {
+void Socket::Bind(const SockAddress& localaddr) {
     int ret =
         ::bind(sockfd_,
                reinterpret_cast<const sockaddr*>(localaddr.get_sockaddr_in6()),
@@ -29,7 +29,7 @@ void Socket::bind(const SockAddress& localaddr) {
     }
 }
 
-void Socket::listen() {
+void Socket::Listen() {
     int ret = ::listen(sockfd_, SOMAXCONN);
     if (ret < 0) {
         FATAL("Socket failed to listen.");
@@ -100,6 +100,16 @@ int Socket::getSocketError(int sockfd) {
     }
 }
 
+// because of RVO, need't copy construction
+Socket Socket::CreateSocket(sa_family_t family) {
+    int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
+                          IPPROTO_TCP);
+    if (sockfd < 0) {
+        FATAL("CreateSocket() failed!");
+    }
+    return Socket(sockfd);
+}
+
 int Socket::accept(int sockfd, struct sockaddr_in6* addr) {
     socklen_t addrlen = static_cast<socklen_t>(sizeof *addr);
     int connfd = ::accept4(sockfd, reinterpret_cast<sockaddr*>(addr), &addrlen,
@@ -135,4 +145,3 @@ int Socket::accept(int sockfd, struct sockaddr_in6* addr) {
     }
     return connfd;
 }
-

@@ -5,6 +5,7 @@
 #ifndef MYWEBSERVER_SOCKET_H
 #define MYWEBSERVER_SOCKET_H
 
+#include <sys/socket.h>
 #include <unistd.h>
 
 #include "Utility/noncopyable.h"
@@ -20,9 +21,9 @@ class Socket : noncopyable {
     int fd() const { return sockfd_; }
 
     // abort if address is in use
-    void bind(const SockAddress& localaddr);
+    void Bind(const SockAddress& localaddr);
     // abort if address is in use
-    void listen();
+    void Listen();
     // the accepted socketfd is returned and *peeraddr is assigned
     // if it succeeds. Otherwise, -1 is returned.
     int accept(SockAddress* peeraddr);
@@ -38,7 +39,10 @@ class Socket : noncopyable {
     // Enable/disable SO_KEEPALIVE
     void setKeepAlive(bool on);
 
+   public:
     static int getSocketError(int sockfd);
+    // create nonblocking Socket, abort if fail
+    static Socket CreateSocket(sa_family_t family);
 
    private:
     int accept(int sockfd, struct sockaddr_in6* addr);

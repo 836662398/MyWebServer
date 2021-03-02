@@ -16,18 +16,18 @@ TcpConnection::TcpConnection(EventLoop *loop, const std::string &name,
                              const SockAddress &peer)
     : loop_(loop),
       name_(name),
-      socket_(std::make_unique<Socket>(sockfd)),
-      channel_(std::make_unique<Channel>(loop, sockfd)),
+      socket_(sockfd),
+      channel_(loop, sockfd),
       local_addr_(local),
       peer_addr_(peer) {
-    channel_->set_read_callback(std::bind(&TcpConnection::HandleRead, this));
-    channel_->set_write_callback(std::bind(&TcpConnection::HandleWrite, this));
-    channel_->set_close_callback(std::bind(&TcpConnection::HandleClose, this));
-    channel_->set_error_callback(std::bind(&TcpConnection::HandleError, this));
+    channel_.set_read_callback(std::bind(&TcpConnection::HandleRead, this));
+    channel_.set_write_callback(std::bind(&TcpConnection::HandleWrite, this));
+    channel_.set_close_callback(std::bind(&TcpConnection::HandleClose, this));
+    channel_.set_error_callback(std::bind(&TcpConnection::HandleError, this));
     TRACE(fmt::format("ctor [{}], fd = {}", name_, sockfd));
 }
 TcpConnection::~TcpConnection() {
-    TRACE(fmt::format("dtor [{}], fd = {}, state = {}", name_, channel_->fd(),
+    TRACE(fmt::format("dtor [{}], fd = {}, state = {}", name_, channel_.fd(),
                       PrintState()));
     assert(state_ == kDisconnected);
 }
@@ -76,8 +76,8 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
         return;
     }
     // if nothing is in output queue, try writing directly
-    if (!channel_->IsWriting() && output_buffer_.ReadableBytes() == 0) {
-        nwritten = ::write(channel_->fd(), data, len);
+    if (!channel_.IsWriting() && output_buffer_.ReadableBytes() == 0) {
+        nwritten = ::write(channel_.fd(), data, len);
         if (nwritten >= 0) {
             remaining = len - nwritten;
             if (remaining == 0 && write_complete_callback_) {
@@ -100,8 +100,8 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
         size_t oldLen = output_buffer_.ReadableBytes();
         output_buffer_.Append(static_cast<const char *>(data) + nwritten,
                               remaining);
-        if (!channel_->IsWriting()) {
-            channel_->EnableWriting();
+        if (!channel_.IsWriting()) {
+            channel_.EnableWriting();
         }
     }
 }
@@ -120,13 +120,13 @@ void TcpConnection::CloseInLoop() {
     }
 }
 
-void TcpConnection::setTcpNoDelay(bool on) { socket_->setTcpNoDelay(on); }
+void TcpConnection::setTcpNoDelay(bool on) { socket_.setTcpNoDelay(on); }
 
 void TcpConnection::ConnectionEstablished() {
     loop_->AssertInLoopThread();
     assert(state_ == kConnecting);
     state_ = kConnected;
-    channel_->EnableReading();
+    channel_.EnableReading();
     connection_callback_(shared_from_this());
 }
 
@@ -134,16 +134,16 @@ void TcpConnection::ConnectionDestroyed() {
     loop_->AssertInLoopThread();
     if (state_ == kConnected) {
         state_ = kDisconnected;
-        channel_->DisableAll();
+        channel_.DisableAll();  // can be omitted
         connection_callback_(shared_from_this());
     }
-    channel_->Remove();
+    channel_.Remove();
 }
 
 void TcpConnection::HandleRead() {
     loop_->AssertInLoopThread();
     int saved_errno = 0;
-    ssize_t n = input_buffer_.ReadFd(channel_->fd(), &saved_errno);
+    ssize_t n = input_buffer_.ReadFd(channel_.fd(), &saved_errno);
     if (n > 0) {
         message_callback_(shared_from_this(), &input_buffer_);
     } else if (n == 0) {
@@ -157,13 +157,13 @@ void TcpConnection::HandleRead() {
 
 void TcpConnection::HandleWrite() {
     loop_->AssertInLoopThread();
-    if (channel_->IsWriting()) {
-        ssize_t n = ::write(channel_->fd(), output_buffer_.ReadData(),
+    if (channel_.IsWriting()) {
+        ssize_t n = ::write(channel_.fd(), output_buffer_.ReadData(),
                             output_buffer_.ReadableBytes());
         if (n > 0) {
             output_buffer_.Skip(n);
             if (output_buffer_.ReadableBytes() == 0) {
-                channel_->DisableWriting();
+                channel_.DisableWriting();
                 if (write_complete_callback_) {
                     loop_->QueueInLoop(std::bind(write_complete_callback_,
                                                  shared_from_this()));
@@ -173,17 +173,17 @@ void TcpConnection::HandleWrite() {
             ERROR("HandleWrite() failed!");
         }
     } else {
-        ERROR(fmt::format("Connection fd = {} can't write!", channel_->fd()));
+        ERROR(fmt::format("Connection fd = {} can't write!", channel_.fd()));
     }
 }
 
 void TcpConnection::HandleClose() {
     loop_->AssertInLoopThread();
-    TRACE(fmt::format("TcpConnection fd = {}, is closed!", channel_->fd()));
+    TRACE(fmt::format("TcpConnection fd = {}, is closed!", channel_.fd()));
     assert(state_ == kConnected || state_ == kDisconnecting);
     // we don't close fd, leave it to Socket dtor
     state_ = kDisconnected;
-    channel_->DisableAll();
+    channel_.DisableAll();
 
     TcpConnectionPtr guard(shared_from_this());
     connection_callback_(guard);
@@ -191,7 +191,7 @@ void TcpConnection::HandleClose() {
 }
 
 void TcpConnection::HandleError() {
-    int err = Socket::getSocketError(channel_->fd());
+    int err = Socket::getSocketError(channel_.fd());
     ERROR(fmt::format("[{}] HandleError() err:{}", name_, strerror_tl(err)));
 }
 

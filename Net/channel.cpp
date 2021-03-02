@@ -39,26 +39,31 @@ void Channel::HandleEvent() {
 }
 
 void Channel::EnableReading() {
+    if (IsReading()) return;
     auto op = (events_ == kNoneEvent ? EPOLL_CTL_ADD : EPOLL_CTL_MOD);
     events_ |= kReadEvent;
     Update(op);
 }
 void Channel::EnableWriting() {
+    if (IsWriting()) return;
     auto op = (events_ == kNoneEvent ? EPOLL_CTL_ADD : EPOLL_CTL_MOD);
     events_ |= kWriteEvent;
     Update(op);
 }
 void Channel::DisableReading() {
+    if (!IsReading()) return;
     events_ &= ~kReadEvent;
     auto op = (events_ == kNoneEvent ? EPOLL_CTL_DEL : EPOLL_CTL_MOD);
     Update(op);
 }
 void Channel::DisableWriting() {
+    if (!IsWriting()) return;
     events_ &= ~kWriteEvent;
     auto op = (events_ == kNoneEvent ? EPOLL_CTL_DEL : EPOLL_CTL_MOD);
     Update(op);
 }
 void Channel::DisableAll() {
+    if (events_ == kNoneEvent) return;
     events_ = kNoneEvent;
     Update(EPOLL_CTL_DEL);
 }
