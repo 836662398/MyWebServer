@@ -20,10 +20,10 @@ class Channel : noncopyable {
     Channel(EventLoop* loop, int fd);
     ~Channel();
 
-    void set_read_callback(EventCallback cb) { read_callback_ = cb; }
-    void set_write_callback(EventCallback cb) { write_callback_ = cb; }
-    void set_close_callback(EventCallback cb) { close_callback_ = cb; }
-    void set_error_callback(EventCallback cb) { error_callback_ = cb; }
+    void set_read_callback(const EventCallback& cb) { read_callback_ = cb; }
+    void set_write_callback(const EventCallback& cb) { write_callback_ = cb; }
+    void set_close_callback(const EventCallback& cb) { close_callback_ = cb; }
+    void set_error_callback(const EventCallback& cb) { error_callback_ = cb; }
     void HandleEvent();
 
     int fd() { return fd_; }

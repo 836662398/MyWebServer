@@ -88,6 +88,18 @@ void Socket::setKeepAlive(bool on) {
     }
 }
 
+int Socket::getSocketError(int sockfd) {
+    int optval;
+    socklen_t optlen = static_cast<socklen_t>(sizeof optval);
+
+    if (::getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &optval, &optlen) < 0) {
+        // getsockopt failed
+        return errno;
+    } else {
+        return optval;
+    }
+}
+
 int Socket::accept(int sockfd, struct sockaddr_in6* addr) {
     socklen_t addrlen = static_cast<socklen_t>(sizeof *addr);
     int connfd = ::accept4(sockfd, reinterpret_cast<sockaddr*>(addr), &addrlen,
@@ -123,3 +135,4 @@ int Socket::accept(int sockfd, struct sockaddr_in6* addr) {
     }
     return connfd;
 }
+

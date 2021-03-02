@@ -73,7 +73,7 @@ Timestamp Epoller::Epoll(int timeout_ms,
     else {
         if (saved_errno != EINTR) {
             errno = saved_errno;
-            ERROR("Failed to epoll_wait!");
+            ERROR("epoll_wait() failed!");
         }
     }
     return now;

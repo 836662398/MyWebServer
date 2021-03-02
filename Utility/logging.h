@@ -14,6 +14,8 @@
 #define ERROR(x) spdlog::get("log")->error("[{}]{}", unit_name, x)
 #define FATAL(x) spdlog::get("log")->error("[{}]{} System exit.", unit_name, x),abort()
 
+const char* strerror_tl(int saved_errno);
+
 class LOG {
    public:
     // singleton

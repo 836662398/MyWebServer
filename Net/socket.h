@@ -38,6 +38,8 @@ class Socket : noncopyable {
     // Enable/disable SO_KEEPALIVE
     void setKeepAlive(bool on);
 
+    static int getSocketError(int sockfd);
+
    private:
     int accept(int sockfd, struct sockaddr_in6* addr);
 
