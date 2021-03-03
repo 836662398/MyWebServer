@@ -5,7 +5,7 @@ set(NET_SRCS
     epoller.cpp
     event_loop.cpp
     event_loop_thread.cpp
-        event_loop_thread_pool.cpp event_loop_thread_pool.h buffer.cpp buffer.h tcp_connection.cpp tcp_connection.h callbacks.h acceptor.cpp acceptor.h)
+        event_loop_thread_pool.cpp event_loop_thread_pool.h buffer.cpp buffer.h tcp_connection.cpp tcp_connection.h callbacks.h acceptor.cpp acceptor.h tcp_server.cpp tcp_server.h)
 
 add_library(lib_net ${NET_SRCS})
 target_link_libraries(lib_net lib_utility)

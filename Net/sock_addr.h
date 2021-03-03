@@ -21,6 +21,7 @@ class SockAddress {
     // for Client
     explicit SockAddress(std::string_view ip, uint16_t port = 0,
                          bool is_ipv6 = false);
+    explicit SockAddress(int sockfd);
     explicit SockAddress(const struct sockaddr_in& addr) : addr_(addr) {}
     explicit SockAddress(const struct sockaddr_in6& addr) : addr6_(addr) {}
 
@@ -51,8 +52,6 @@ class SockAddress {
     static bool Resolve(std::string_view hostname, SockAddress* out);
 
    private:
-    void CtorImpl(uint16_t port, std::string_view ip, bool is_ipv6);
-
     union {
         sockaddr_in addr_;
         sockaddr_in6 addr6_;

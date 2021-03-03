@@ -15,14 +15,6 @@
 static std::string unit_name = "SockAddress";
 
 SockAddress::SockAddress(uint16_t port, std::string_view ip, bool is_ipv6) {
-    CtorImpl(port, ip, is_ipv6);
-}
-
-SockAddress::SockAddress(std::string_view ip, uint16_t port, bool is_ipv6) {
-    CtorImpl(port, ip, is_ipv6);
-}
-
-void SockAddress::CtorImpl(uint16_t port, std::string_view ip, bool is_ipv6) {
     if (is_ipv6) {
         memset(&addr6_, 0, sizeof addr6_);
         IpPortToSockaddr(ip.data(), port, &addr6_);
@@ -30,6 +22,20 @@ void SockAddress::CtorImpl(uint16_t port, std::string_view ip, bool is_ipv6) {
         memset(&addr_, 0, sizeof addr_);
         IpPortToSockaddr(ip.data(), port, &addr_);
     }
+}
+
+SockAddress::SockAddress(std::string_view ip, uint16_t port, bool is_ipv6)
+    : SockAddress(port, ip, is_ipv6) {}
+
+SockAddress::SockAddress(int sockfd) {
+    struct sockaddr_in6 localaddr;
+    memset(&localaddr, 0, sizeof localaddr);
+    socklen_t addrlen = static_cast<socklen_t>(sizeof localaddr);
+    if (::getsockname(sockfd, reinterpret_cast<struct sockaddr *>(&localaddr),
+                      &addrlen) < 0) {
+        ERROR("getsockname() failed");
+    }
+    addr6_ = localaddr;
 }
 
 void SockAddress::IpPortToSockaddr(const char *ip, uint16_t port,

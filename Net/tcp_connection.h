@@ -41,22 +41,24 @@ class TcpConnection : noncopyable,
     void CloseInLoop();
 
     void setTcpNoDelay(bool on);
-    void setConnectionCallback(const ConnectionCallback& cb) {
+    void set_connection_callback(const ConnectionCallback& cb) {
         connection_callback_ = cb;
     }
-    void setMessageCallback(const MessageCallback& cb) {
+    void set_message_callback(const MessageCallback& cb) {
         message_callback_ = cb;
     }
-    void setWriteCompleteCallback(const WriteCompleteCallback& cb) {
+    void set_write_complete_callback(const WriteCompleteCallback& cb) {
         write_complete_callback_ = cb;
     }
     void set_close_callback(const CloseCallback& cb) { close_callback_ = cb; }
 
     // called when TcpServer accepts a new connection, only once
-    void ConnectionEstablished();
+    void ConnEstablished();
     // called when TcpServer removes TcpConnection from its map,
     // each TcpConnection will call once
-    void ConnectionDestroyed();
+    void ConnDestroy();
+
+    static void DefaultConnCallback(const TcpConnectionPtr& conn);
 
    private:
     enum State {

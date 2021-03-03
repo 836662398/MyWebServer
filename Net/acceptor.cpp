@@ -47,7 +47,7 @@ void Acceptor::HandleRead() {
             new_connection_callback_(connfd, peer_addr);
         } else {
             ERROR("new_connection_callback_ isn't set!");
-            ::close(connfd);
+            if (::close(connfd) < 0) ERROR("close() failed!");
         }
     }
     if (errno != EWOULDBLOCK) {
@@ -57,7 +57,7 @@ void Acceptor::HandleRead() {
             idle_fd_ = ::accept(accept_socket_.fd(), NULL, NULL);
             ::close(idle_fd_);
             idle_fd_ = ::open("/dev/null", O_RDONLY | O_CLOEXEC);
-        }else{
+        } else {
             ERROR("accept() failed!");
         }
     }

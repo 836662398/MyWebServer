@@ -6,6 +6,7 @@
 #define MYWEBSERVER_CALLBACKS_H
 
 #include <functional>
+#include <memory>
 
 class Buffer;
 class TcpConnection;

@@ -122,7 +122,7 @@ void TcpConnection::CloseInLoop() {
 
 void TcpConnection::setTcpNoDelay(bool on) { socket_.setTcpNoDelay(on); }
 
-void TcpConnection::ConnectionEstablished() {
+void TcpConnection::ConnEstablished() {
     loop_->AssertInLoopThread();
     assert(state_ == kConnecting);
     state_ = kConnected;
@@ -130,7 +130,7 @@ void TcpConnection::ConnectionEstablished() {
     connection_callback_(shared_from_this());
 }
 
-void TcpConnection::ConnectionDestroyed() {
+void TcpConnection::ConnDestroy() {
     loop_->AssertInLoopThread();
     if (state_ == kConnected) {
         state_ = kDisconnected;
@@ -208,4 +208,10 @@ const char *TcpConnection::PrintState() {
         default:
             return "unknown state";
     }
+}
+
+void TcpConnection::DefaultConnCallback(const TcpConnectionPtr &conn) {
+    TRACE(fmt::format("{} -> {} is {}.", conn->local_addr().IpPort(),
+                      conn->peer_addr().IpPort(),
+                      conn->Connected() ? "UP" : "DOWN"));
 }
