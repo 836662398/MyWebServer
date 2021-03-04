@@ -40,7 +40,7 @@ TimerManager::TimerManager(EventLoop *loop)
       timerfd_(CreateTimerfd()),
       timer_channel_(loop, timerfd_),
       earliest_time_set_(Timestamp()),
-      no_timer_set_(false) {
+      no_time_set_(false) {
     timer_channel_.set_read_callback(
         std::bind(&TimerManager::HandleRead, this));
     timer_channel_.EnableReading();
@@ -76,9 +76,9 @@ void TimerManager::Fresh() {
     // there are three cases to timerfd_settime():
     // 1. first timer is added;
     // 2. earlier timer is added;
-    // 3. timerfd was awaken up just now, new timer should be set
+    // 3. timerfd was awaken up just now, new time should be set
     if (earliest_time_set_ == Timestamp() ||
-        earliest_time < earliest_time_set_ || no_timer_set_) {
+        earliest_time < earliest_time_set_ || no_time_set_) {
         ResetTimerfd(earliest_time);
     }
 }
@@ -94,7 +94,7 @@ void TimerManager::ResetTimerfd(Timestamp deadline) {
         ERROR("timerfd_settime() failed!");
     else {
         earliest_time_set_ = deadline;
-        no_timer_set_ = false;
+        no_time_set_ = false;
     }
 }
 
@@ -110,7 +110,7 @@ void TimerManager::HandleRead() {
                 timer->Run();
                 if (timer->Restart()) timers_heap_.push(timer);
             }
-            no_timer_set_ = true;
+            no_time_set_ = true;
         } else {
             break;
         }

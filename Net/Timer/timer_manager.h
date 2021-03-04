@@ -42,7 +42,7 @@ class TimerManager : noncopyable {
     // the earliest timestamp was set in timerfd_settime(),
     // no timestamp was set if earliest_time_set_ is Timestamp()
     Timestamp earliest_time_set_;
-    bool no_timer_set_;
+    bool no_time_set_;
     Channel timer_channel_;
     std::priority_queue<TimerPtr, std::vector<TimerPtr>, TimerCmp> timers_heap_;
 };
