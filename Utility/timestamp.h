@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <string>
 
 class Timestamp {
    public:
@@ -36,13 +37,16 @@ class Timestamp {
     double operator-(const Timestamp& rhs) {
         return (us_ - rhs.us_) * 1.0 / kMicrosecondsPerSecond;
     }
-    bool operator<(const Timestamp& rhs) { return us_ < rhs.us_; }
-    bool operator>(const Timestamp& rhs) { return us_ > rhs.us_; }
-    bool operator<=(const Timestamp& rhs) { return us_ <= rhs.us_; }
-    bool operator>=(const Timestamp& rhs) { return us_ >= rhs.us_; }
-    bool operator==(const Timestamp& rhs) { return us_ == rhs.us_; }
+    bool operator<(const Timestamp& rhs) const { return us_ < rhs.us_; }
+    bool operator>(const Timestamp& rhs) const { return us_ > rhs.us_; }
+    bool operator<=(const Timestamp& rhs) const { return us_ <= rhs.us_; }
+    bool operator>=(const Timestamp& rhs) const { return us_ >= rhs.us_; }
+    bool operator==(const Timestamp& rhs) const { return us_ == rhs.us_; }
 
-    int64_t us() { return us_; }
+    std::string FormatS() const;
+    std::string Format(bool show_us = true) const;
+
+    int64_t us() const { return us_; }
     static Timestamp Now() {
         struct timeval tv;
         gettimeofday(&tv, NULL);
@@ -58,5 +62,6 @@ class Timestamp {
     // 1970-01-01 00:00:00 +0000 (UTC).
     int64_t us_;
 };
+
 
 #endif  // MYWEBSERVER_TIMESTAMP_H

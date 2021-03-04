@@ -3,10 +3,11 @@
 //
 #include "Utility/timestamp.h"
 
-#include <gtest/gtest.h>
-
 #include <chrono>
 
+#include <gtest/gtest.h>
+
+using namespace std;
 TEST(TimestampTest, test) {
     auto t = Timestamp();
     auto now = Timestamp::Now();
@@ -44,4 +45,7 @@ TEST(TimestampTest, test1) {
             printf("big gap %lf\n", inc);
         }
     }
+    cout<<Timestamp::Now().FormatS()<<endl;
+    cout<<Timestamp::Now().Format()<<endl;
+    cout<<Timestamp::Now().Format(false)<<endl;
 }

@@ -7,10 +7,11 @@
 
 #include <functional>
 
+#include "Net/callbacks.h"
+#include "Net/channel.h"
+#include "Net/epoller.h"
+#include "Net/Timer/timer_manager.h"
 #include "Utility/logging.h"
-
-class Channel;
-class Epoller;
 
 class EventLoop {
    public:
@@ -35,6 +36,18 @@ class EventLoop {
     void RemoveChannel(Channel *channel);
     bool HasChannel(Channel* channel);
 
+    // timers
+    // thread safe
+
+    // run callback at 'time'.
+    TimerPtr RunAt(Timestamp time, TimerCallback cb);
+    // run callback after delay seconds.
+    TimerPtr RunAfter(double delay, TimerCallback cb);
+    // run callback every interval seconds.
+    TimerPtr RunEvery(double interval, TimerCallback cb);
+    // cancel the timer.
+    void Cancel(TimerPtr timer);
+
     bool IsInLoopThread();
     void AssertInLoopThread();
     static EventLoop* get_thread_local_eventloop();
@@ -51,6 +64,7 @@ class EventLoop {
     std::atomic<bool> quit_flag_;
     std::unique_ptr<Epoller> epoller_;
     std::vector<Channel*> active_channels_;
+    TimerManager timer_manager_;
 
     int wakeup_fd_;
     std::unique_ptr<Channel> wakeup_channel_;

@@ -11,6 +11,9 @@
 class Buffer;
 class TcpConnection;
 using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
+class Timer;
+using TimerPtr = std::shared_ptr<Timer>;
+using TimerCallback = std::function<void()>;
 // use TcpConnectionPtr as parameter to store TcpConnection objects for RAII
 using ConnectionCallback = std::function<void(const TcpConnectionPtr&)>;
 using CloseCallback = std::function<void(const TcpConnectionPtr&)>;

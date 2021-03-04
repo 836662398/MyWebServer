@@ -47,11 +47,8 @@ void Epoller::UpdateChannel(Channel *channel, int operation) {
 
 void Epoller::RemoveChannel(Channel *channel) {
     int fd = channel->fd();
-    if(fd2channel_.find(fd) != fd2channel_.end()){
+    if (fd2channel_.find(fd) != fd2channel_.end()) {
         UpdateChannel(channel, EPOLL_CTL_DEL);
-        if (fd2channel_.erase(fd) != 1) {
-            FATAL("RemoveChannel failed to erase.");
-        }
     }
 }
 

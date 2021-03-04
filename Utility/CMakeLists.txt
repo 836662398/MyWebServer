@@ -1,6 +1,6 @@
 set(UTILITY_SRCS
     types.cpp
-        logging.cpp)
+        logging.cpp timestamp.cpp)
 
 add_library(lib_utility ${UTILITY_SRCS})
 target_link_libraries(lib_utility spdlog::spdlog pthread)
