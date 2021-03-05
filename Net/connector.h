@@ -27,12 +27,12 @@ class Connector : noncopyable, public std::enable_shared_from_this<Connector> {
     }
 
     // thread safe
-    void start();
-    // stop retrying connect() instead of disconnect
+    void Start();
+    // Stop retrying Connect() instead of Disconnect
     // thread safe
-    void stop();
+    void Stop();
     // must be called in loop thread
-    void restart();
+    void Restart();
 
     const SockAddress& server_address() const { return server_addr_; }
 
@@ -44,7 +44,7 @@ class Connector : noncopyable, public std::enable_shared_from_this<Connector> {
     void setState(States s) { state_ = s; }
     void StartInLoop();
     void StopInLoop();
-    // call nonblocking connect
+    // call nonblocking Connect
     void Connect();
     // prepare to handle writable event
     void Connecting(int sockfd);

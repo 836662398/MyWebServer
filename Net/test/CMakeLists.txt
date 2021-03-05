@@ -19,3 +19,12 @@ target_link_libraries(buffer_test ${GTEST_LIB} lib_net)
 
 add_executable(timer_manager_test gtest_main.cc timer_manager_test.cpp)
 target_link_libraries(timer_manager_test ${GTEST_LIB} lib_net)
+
+add_executable(tcp_client_test gtest_main.cc tcp_client_test.cpp)
+target_link_libraries(tcp_client_test ${GTEST_LIB} lib_net)
+
+add_executable(EchoServer echo_server.cpp)
+target_link_libraries(EchoServer lib_net)
+
+add_executable(EchoClient echo_client.cpp)
+target_link_libraries(EchoClient lib_net)

@@ -18,14 +18,16 @@ TcpServer::TcpServer(EventLoop *loop, const SockAddress &listen_addr,
       thread_pool_(
           std::make_unique<EventLoopThreadPool>(loop, thread_num, name)),
       connection_callback_(TcpConnection::DefaultConnCallback),
+      message_callback_(TcpConnection::DefaultMessageCallback),
       started_(false),
       next_conn_id_(1) {
     using namespace std::placeholders;
+    assert(loop != nullptr);
     acceptor_->set_new_connection_callback(
         std::bind(&TcpServer::HandleNewConn, this, _1, _2));
 }
 
-TcpServer::TcpServer(EventLoop *loop, int port, int thread_num,
+TcpServer::TcpServer(EventLoop *loop, uint16_t port, int thread_num,
                      const std::string &name, bool is_reuseport)
     : TcpServer(loop, SockAddress(port), thread_num, name, is_reuseport) {}
 
@@ -42,6 +44,8 @@ void TcpServer::StartListening() {
     bool b = false;
     // first para shouble be lvalue
     if (started_.compare_exchange_strong(b, true)) {
+        thread_pool_->Start();
+
         assert(!acceptor_->IsListening());
         loop_->RunInLoop(std::bind(&Acceptor::Listen, acceptor_.get()));
     }

@@ -16,10 +16,12 @@ TcpConnection::TcpConnection(EventLoop *loop, const std::string &name,
                              const SockAddress &peer)
     : loop_(loop),
       name_(name),
+      state_(kConnecting),
       socket_(sockfd),
       channel_(loop, sockfd),
       local_addr_(local),
       peer_addr_(peer) {
+    assert(loop != nullptr);
     channel_.set_read_callback(std::bind(&TcpConnection::HandleRead, this));
     channel_.set_write_callback(std::bind(&TcpConnection::HandleWrite, this));
     channel_.set_close_callback(std::bind(&TcpConnection::HandleClose, this));
@@ -215,3 +217,10 @@ void TcpConnection::DefaultConnCallback(const TcpConnectionPtr &conn) {
                       conn->peer_addr().IpPort(),
                       conn->Connected() ? "UP" : "DOWN"));
 }
+
+void TcpConnection::DefaultMessageCallback(const TcpConnectionPtr &conn,
+                                           Buffer *buffer) {
+    buffer->Reset();
+    INFO("No MessageCallback was set!");
+}
+

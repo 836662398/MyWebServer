@@ -10,7 +10,10 @@
 #include "Net/socket.h"
 #include "Utility/logging.h"
 
-std::string unit_name = "Connector";
+static std::string unit_name = "Connector";
+
+const int Connector::kMaxRetryDelayMs;
+const int Connector::kInitRetryDelayMs;
 
 Connector::Connector(EventLoop* loop, const SockAddress& serverAddr)
     : loop_(loop),
@@ -26,7 +29,7 @@ Connector::~Connector() {
     assert(!channel_);
 }
 
-void Connector::start() {
+void Connector::Start() {
     connect_ = true;
     loop_->RunInLoop(
         std::bind(&Connector::StartInLoop, this));
@@ -42,7 +45,7 @@ void Connector::StartInLoop() {
     }
 }
 
-void Connector::stop() {
+void Connector::Stop() {
     connect_ = false;
     loop_->QueueInLoop(std::bind(&Connector::StopInLoop, this));
     if (auto timer = retry_timer_.lock()) {
@@ -82,13 +85,13 @@ void Connector::Connect() {
             break;
 
         default:
-            ERROR(fmt::format("connect() failed, error {}", savedErrno));
+            ERROR(fmt::format("Connect() failed, error {}", savedErrno));
             Socket::close(sockfd);
             break;
     }
 }
 
-void Connector::restart() {
+void Connector::Restart() {
     loop_->AssertInLoopThread();
     setState(kDisconnected);
     retry_delay_ms_ = kInitRetryDelayMs;
@@ -125,12 +128,12 @@ void Connector::HandleWrite() {
                               strerror_tl(err)));
             Retry(sockfd);
         } else if (Socket::IsSelfConnect(sockfd)) {
-            ERROR("HandleWrite() - Self connect");
+            ERROR("HandleWrite() - Self Connect");
             Retry(sockfd);
         } else {
             setState(kConnected);
             if (connect_) {
-                // connect succeed, transfer sockfd
+                // Connect succeed, transfer sockfd
                 new_connection_callback_(sockfd);
             } else {
                 Socket::close(sockfd);

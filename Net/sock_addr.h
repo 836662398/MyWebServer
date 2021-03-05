@@ -19,7 +19,7 @@ class SockAddress {
     explicit SockAddress(uint16_t port, std::string_view ip = "0.0.0.0",
                          bool is_ipv6 = false);
     // for Client
-    explicit SockAddress(std::string_view ip, uint16_t port = 0,
+    explicit SockAddress(std::string_view ip, uint16_t port,
                          bool is_ipv6 = false);
     explicit SockAddress(int sockfd);
     explicit SockAddress(const struct sockaddr_in& addr) : addr_(addr) {}

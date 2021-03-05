@@ -10,9 +10,10 @@
 #include "Net/buffer.h"
 #include "Net/callbacks.h"
 #include "Net/channel.h"
-#include "Net/socket.h"
 #include "Net/sock_addr.h"
+#include "Net/socket.h"
 #include "Utility/noncopyable.h"
+#include "Utility/timestamp.h"
 
 class Channel;
 class EventLoop;
@@ -50,15 +51,20 @@ class TcpConnection : noncopyable,
     void set_write_complete_callback(const WriteCompleteCallback& cb) {
         write_complete_callback_ = cb;
     }
+    // be called by TcpServer or TcpClient
+    // their close_callback_ erase their TcpConnection members
+    // and call ConnDestroy() to remove channel
     void set_close_callback(const CloseCallback& cb) { close_callback_ = cb; }
 
-    // called when TcpServer accepts a new connection, only once
+    // called when TcpServer or TcpClient accepts/Connect a new connection,
+    // only once
     void ConnEstablished();
-    // called when TcpServer removes TcpConnection from its map,
+    // called when TcpServer or TcpClient removes TcpConnection from its map,
     // each TcpConnection will call once
     void ConnDestroy();
 
     static void DefaultConnCallback(const TcpConnectionPtr& conn);
+    static void DefaultMessageCallback(const TcpConnectionPtr& conn, Buffer* buffer);
 
    private:
     enum State {

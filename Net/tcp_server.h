@@ -12,6 +12,7 @@
 #include "Net/callbacks.h"
 #include "Net/event_loop_thread_pool.h"
 #include "Net/sock_addr.h"
+#include "Net/tcp_connection.h"
 #include "Utility/noncopyable.h"
 
 class TcpServer : noncopyable {
@@ -22,7 +23,7 @@ class TcpServer : noncopyable {
     // - 1 means all I/O in another thread.
     // - N means a thread pool with N threads, new connections
     //   are assigned on a round-robin basis.
-    TcpServer(EventLoop* loop, int port, int thread_num = 0,
+    TcpServer(EventLoop* loop, uint16_t port, int thread_num = 0,
               const std::string& name = "", bool is_reuseport = false);
     TcpServer(EventLoop* loop, const SockAddress& listen_addr,
               int thread_num = 0, const std::string& name = "",

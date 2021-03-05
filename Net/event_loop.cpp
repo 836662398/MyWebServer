@@ -65,7 +65,7 @@ void EventLoop::Loop() {
         }
         HandlePendingCallbacks();
     }
-    INFO(fmt::format("EventLoop in thread {} stop looping.",
+    INFO(fmt::format("EventLoop in thread {} Stop looping.",
                      IdToInt(thread_id_)));
     looping_ = false;
 }
