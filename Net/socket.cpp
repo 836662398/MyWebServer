@@ -9,14 +9,13 @@
 
 #include "Net/sock_addr.h"
 #include "Utility/logging.h"
+#include "Utility/types.h"
 
 // for logging
 static std::string unit_name = "Socket";
 
 Socket::~Socket() {
-    if (close(sockfd_) < 0) {
-        ERROR("Socket failed to close.");
-    }
+    close(sockfd_);
 }
 
 void Socket::Bind(const SockAddress& localaddr) {
@@ -102,12 +101,63 @@ int Socket::getSocketError(int sockfd) {
 
 // because of RVO, need't copy construction
 Socket Socket::CreateSocket(sa_family_t family) {
+    return Socket(CreateSocketFd(family));
+}
+
+int Socket::CreateSocketFd(sa_family_t family) {
     int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
                           IPPROTO_TCP);
     if (sockfd < 0) {
-        FATAL("CreateSocket() failed!");
+        FATAL("socket() failed!");
     }
-    return Socket(sockfd);
+}
+
+void Socket::close(int sockfd) {
+    if (::close(sockfd) < 0) {
+        ERROR("close() failed!");
+    }
+}
+
+struct sockaddr_in6 Socket::getLocalAddr(int sockfd) {
+    struct sockaddr_in6 localaddr;
+    memzero(&localaddr, sizeof localaddr);
+    socklen_t addrlen = static_cast<socklen_t>(sizeof localaddr);
+    if (::getsockname(sockfd, reinterpret_cast<struct sockaddr*>(&localaddr),
+                      &addrlen) < 0) {
+        ERROR("getLocalAddr() failed!");
+    }
+    return localaddr;
+}
+
+struct sockaddr_in6 Socket::getPeerAddr(int sockfd) {
+    struct sockaddr_in6 peeraddr;
+    memzero(&peeraddr, sizeof peeraddr);
+    socklen_t addrlen = static_cast<socklen_t>(sizeof peeraddr);
+    if (::getpeername(sockfd, reinterpret_cast<struct sockaddr*>(&peeraddr),
+                      &addrlen) < 0) {
+        ERROR("getPeerAddr() failed!");
+    }
+    return peeraddr;
+}
+
+// selfconnect: https://gameinstitute.qq.com/community/detail/112599
+bool Socket::IsSelfConnect(int sockfd) {
+    struct sockaddr_in6 localaddr = getLocalAddr(sockfd);
+    struct sockaddr_in6 peeraddr = getPeerAddr(sockfd);
+    if (localaddr.sin6_family == AF_INET) {
+        const struct sockaddr_in* laddr4 =
+            reinterpret_cast<struct sockaddr_in*>(&localaddr);
+        const struct sockaddr_in* raddr4 =
+            reinterpret_cast<struct sockaddr_in*>(&peeraddr);
+        return laddr4->sin_port == raddr4->sin_port &&
+               laddr4->sin_addr.s_addr == raddr4->sin_addr.s_addr;
+    } else if (localaddr.sin6_family == AF_INET6) {
+        return localaddr.sin6_port == peeraddr.sin6_port &&
+               memcmp(&localaddr.sin6_addr, &peeraddr.sin6_addr,
+                      sizeof localaddr.sin6_addr) == 0;
+    } else {
+        return false;
+    }
 }
 
 int Socket::accept(int sockfd, struct sockaddr_in6* addr) {

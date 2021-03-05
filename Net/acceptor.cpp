@@ -47,7 +47,7 @@ void Acceptor::HandleRead() {
             new_connection_callback_(connfd, peer_addr);
         } else {
             ERROR("new_connection_callback_ isn't set!");
-            if (::close(connfd) < 0) ERROR("close() failed!");
+            Socket::close(connfd);
         }
     }
     if (errno != EWOULDBLOCK) {

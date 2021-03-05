@@ -31,8 +31,11 @@ class SockAddress {
     sa_family_t family() const { return addr_.sin_family; }
     uint16_t PortNetEndian() const { return addr_.sin_port; }
 
-    const sockaddr_in* get_sockaddr_in() const { return &addr_; }
-    const sockaddr_in6* get_sockaddr_in6() const { return &addr6_; }
+    const struct sockaddr_in* get_sockaddr_in() const { return &addr_; }
+    const struct sockaddr_in6* get_sockaddr_in6() const { return &addr6_; }
+    const struct sockaddr* get_sockaddr() const {
+        return reinterpret_cast<const struct sockaddr*>(&addr6_);
+    }
     void set_sockaddr_in6(const struct sockaddr_in6& addr6) { addr6_ = addr6; }
 
     // some utilities of sockaddr

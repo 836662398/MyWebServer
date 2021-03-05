@@ -7,6 +7,7 @@
 #include <sys/timerfd.h>
 
 #include "Net/event_loop.h"
+#include "Net/socket.h"
 #include "Utility/logging.h"
 #include "Utility/types.h"
 
@@ -48,7 +49,7 @@ TimerManager::TimerManager(EventLoop *loop)
 
 TimerManager::~TimerManager() {
     timer_channel_.Remove();
-    ::close(timerfd_);
+    Socket::close(timerfd_);
 }
 
 TimerPtr TimerManager::AddTimer(TimerCallback cb, Timestamp time,

@@ -55,10 +55,11 @@ TEST(TimerTest, test2) {
     x = 0;
     EventLoopThread loopThread;
     EventLoop* loop = loopThread.StartLoop();
-    loop->RunEvery(2, Print);
+    auto timer = loop->RunEvery(2, Print);
     loop->RunAfter(7, [] { Jundge(3); });
     loop->RunAfter(1, [] { Jundge(0); });
     loop->RunAfter(5, [] { Jundge(2); });
-    loop->RunAfter(9, [] { Jundge(4); });
+    loop->RunAfter(7, [timer, loop] { loop->Cancel(timer);});
+    loop->RunAfter(9, [] { Jundge(3); });
     this_thread::sleep_for(13s);
 }
