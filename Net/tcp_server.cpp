@@ -6,7 +6,7 @@
 
 #include <Net/tcp_connection.h>
 
-std::string unit_name = "TcpServer";
+static std::string unit_name = "TcpServer";
 
 TcpServer::TcpServer(EventLoop *loop, const SockAddress &listen_addr,
                      int thread_num, const std::string &name, bool is_reuseport)
@@ -61,7 +61,7 @@ void TcpServer::HandleNewConn(int sockfd, const SockAddress &peer_addr) {
     INFO(fmt::format("HandleNewConn(): new connection [{}] from {}", conn_name,
                      peer_addr.IpPort()));
 
-    SockAddress local_addr(sockfd);
+    SockAddress local_addr = SockAddress::CreateSockAddressByFd(sockfd);
     TcpConnectionPtr conn(std::make_shared<TcpConnection>(
         io_loop, conn_name, sockfd, local_addr, peer_addr));
     connections_[conn_name] = conn;

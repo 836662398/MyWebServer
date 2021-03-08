@@ -6,6 +6,7 @@
 
 #include <signal.h>
 #include <sys/eventfd.h>
+#include <unistd.h>
 
 #include "Utility/logging.h"
 #include "Utility/types.h"

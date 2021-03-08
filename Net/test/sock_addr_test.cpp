@@ -1,7 +1,7 @@
 //
 // Created by rui836662398 on 2021/2/9.
 //
-#include "../sock_addr.h"
+#include "Net/sock_addr.h"
 
 #include <gtest/gtest.h>
 
@@ -44,7 +44,7 @@ TEST(SockAddressTest, test1) {
     EXPECT_EQ(addr4.IpPort(), string("192.168.1.1:4321"));
     EXPECT_EQ(addr4.Port(), 4321);
 
-    SockAddress addr2("1.2.3.4");
+    SockAddress addr2("1.2.3.4", 0);
     EXPECT_EQ(addr2.Ip(), string("1.2.3.4"));
     EXPECT_EQ(addr2.IpPort(), string("1.2.3.4:0"));
     EXPECT_EQ(addr2.Port(), 0);

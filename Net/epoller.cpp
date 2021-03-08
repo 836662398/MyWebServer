@@ -5,6 +5,7 @@
 #include "epoller.h"
 
 #include <sys/epoll.h>
+#include <unistd.h>
 
 #include "Utility/logging.h"
 

@@ -108,7 +108,7 @@ int Socket::CreateSocketFd(sa_family_t family) {
     int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
                           IPPROTO_TCP);
     if (sockfd < 0) {
-        FATAL("socket() failed!");
+        FATAL(fmt::format("socket() failed! error {}", strerror_tl(errno)));
     }
 }
 
@@ -166,7 +166,7 @@ int Socket::accept(int sockfd, struct sockaddr_in6* addr) {
                            SOCK_NONBLOCK | SOCK_CLOEXEC);
     if (connfd < 0) {
         int savedErrno = errno;
-        ERROR("Socket failed to accept");
+//        ERROR("Socket failed to accept");
         switch (savedErrno) {
             case EAGAIN:
             case ECONNABORTED:

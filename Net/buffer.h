@@ -27,7 +27,7 @@ class Buffer {
     size_t WritableBytes() const { return buffer_.size() - write_index_; }
     size_t PrePendedBytes() const { return read_index_; }
 
-    char* ReadData() { return begin() + read_index_; }
+//    char* ReadData() { return begin() + read_index_; }
     const char* ReadData() const { return begin() + read_index_; }
     char* WriteData() { return begin() + write_index_; }
     const char* WriteData() const { return begin() + write_index_; }
@@ -69,6 +69,7 @@ class Buffer {
         write_index_ += len;
         assert(write_index_ <= buffer_.size());
     }
+    // parameter data passed in must have longer lifespan than this function
     void Append(std::string_view data) { Write(data.data(), data.size()); }
     void Append(const char* data, size_t len) { Write(data, len); }
 
@@ -91,13 +92,11 @@ class Buffer {
         void* crlf = memmem(start, WriteData() - start, kCRLF, 2);
         return crlf == NULL ? nullptr : reinterpret_cast<const char*>(crlf);
     }
-    const char* FindEOL() const
-    {
+    const char* FindEOL() const {
         const void* eol = memchr(ReadData(), '\n', ReadableBytes());
         return static_cast<const char*>(eol);
     }
-    const char* FindEOL(const char* start) const
-    {
+    const char* FindEOL(const char* start) const {
         assert(ReadData() <= start);
         assert(start <= WriteData());
         const void* eol = memchr(start, '\n', WriteData() - start);
@@ -125,7 +124,6 @@ class Buffer {
     std::vector<char> buffer_;
     size_t read_index_;
     size_t write_index_;
-
 };
 
 #endif  // MYWEBSERVER_BUFFER_H

@@ -73,10 +73,10 @@ void TcpClient::HandleNewConn(int sockfd) {
 
     INFO(fmt::format("HandleNewConn(): new connection [{}] ", conn_name));
 
-    SockAddress localAddr(sockfd);
+    SockAddress local_addr = SockAddress::CreateSockAddressByFd(sockfd);
 
     TcpConnectionPtr conn(std::make_shared<TcpConnection>(
-        loop_, conn_name, sockfd, localAddr, peer_addr));
+        loop_, conn_name, sockfd, local_addr, peer_addr));
 
     conn->set_connection_callback(connection_callback_);
     conn->set_message_callback(message_callback_);

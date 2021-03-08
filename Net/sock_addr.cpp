@@ -27,7 +27,8 @@ SockAddress::SockAddress(uint16_t port, std::string_view ip, bool is_ipv6) {
 SockAddress::SockAddress(std::string_view ip, uint16_t port, bool is_ipv6)
     : SockAddress(port, ip, is_ipv6) {}
 
-SockAddress::SockAddress(int sockfd) {
+
+SockAddress SockAddress::CreateSockAddressByFd(int sockfd) {
     struct sockaddr_in6 localaddr;
     memset(&localaddr, 0, sizeof localaddr);
     socklen_t addrlen = static_cast<socklen_t>(sizeof localaddr);
@@ -35,8 +36,9 @@ SockAddress::SockAddress(int sockfd) {
                       &addrlen) < 0) {
         ERROR("getsockname() failed");
     }
-    addr6_ = localaddr;
+    return SockAddress(localaddr);
 }
+
 
 void SockAddress::IpPortToSockaddr(const char *ip, uint16_t port,
                                    struct sockaddr_in *addr) {

@@ -13,6 +13,7 @@
 class SockAddress {
    public:
     SockAddress() {}
+
     // Constructs an endpoint with given ip and port.
     // ip should be "1.2.3.4"
     // for Server
@@ -21,9 +22,9 @@ class SockAddress {
     // for Client
     explicit SockAddress(std::string_view ip, uint16_t port,
                          bool is_ipv6 = false);
-    explicit SockAddress(int sockfd);
     explicit SockAddress(const struct sockaddr_in& addr) : addr_(addr) {}
     explicit SockAddress(const struct sockaddr_in6& addr) : addr6_(addr) {}
+    static SockAddress CreateSockAddressByFd(int sockfd);
 
     std::string Ip() const;
     std::string IpPort() const;

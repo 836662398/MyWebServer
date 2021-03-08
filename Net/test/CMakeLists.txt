@@ -28,3 +28,9 @@ target_link_libraries(EchoServer lib_net)
 
 add_executable(EchoClient echo_client.cpp)
 target_link_libraries(EchoClient lib_net)
+
+add_executable(http_parser_test gtest_main.cc http_parser_test.cpp)
+target_link_libraries(http_parser_test ${GTEST_LIB} lib_net)
+
+add_executable(http_server_test http_server_test.cpp)
+target_link_libraries(http_server_test lib_net)

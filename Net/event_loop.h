@@ -6,6 +6,7 @@
 #define MYWEBSERVER_EVENT_LOOP_H
 
 #include <functional>
+#include <thread>
 
 #include "Net/callbacks.h"
 #include "Net/channel.h"
