@@ -4,6 +4,8 @@
 
 #include "http_server.h"
 
+#include <any>
+
 #include "Utility/logging.h"
 
 static std::string unit_name = "HttpServer";
@@ -32,18 +34,12 @@ void HttpServer::StartListening() {
 }
 
 void HttpServer::OnConnection(const TcpConnectionPtr &conn) {
-    if (conn->Connected()) {
-        conn2parser_[conn] = std::make_shared<HttpParser>();
-    } else {
-        int ret = conn2parser_.erase(conn);
-        assert(ret == 1);
-    }
+    if (conn->Connected())
+        conn->set_something(HttpParser());
 }
 
 void HttpServer::OnMessage(const TcpConnectionPtr &conn, Buffer *buf) {
-    auto parser = conn2parser_[conn];
-    assert(parser);
-
+    auto parser = std::any_cast<HttpParser>(conn->p_something());
     if (!parser->ParseRequest(buf)) {
         conn->Send("HTTP/1.1 400 Bad Request\r\n\r\n");
     }

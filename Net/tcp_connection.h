@@ -5,6 +5,7 @@
 #ifndef MYWEBSERVER_TCP_CONNECTION_H
 #define MYWEBSERVER_TCP_CONNECTION_H
 
+#include <any>
 #include <memory>
 
 #include "Net/buffer.h"
@@ -63,6 +64,15 @@ class TcpConnection : noncopyable,
     // each TcpConnection will call once
     void ConnDestroy();
 
+    void set_something(const std::any& something)
+    { something_ = something; }
+
+    const std::any& something() const
+    { return something_; }
+
+    std::any* p_something()
+    { return &something_; }
+
     static void DefaultConnCallback(const TcpConnectionPtr& conn);
     static void DefaultMessageCallback(const TcpConnectionPtr& conn, Buffer* buffer);
 
@@ -97,6 +107,8 @@ class TcpConnection : noncopyable,
     CloseCallback close_callback_;
     Buffer input_buffer_;
     Buffer output_buffer_;
+    // something could be used
+    std::any something_;
 };
 
 #endif  // MYWEBSERVER_TCP_CONNECTION_H

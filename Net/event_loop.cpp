@@ -24,20 +24,23 @@ IgnoreSigPipe init_sig;
 
 }  // namespace
 
+std::atomic<int> EventLoop::sequence_generator_ = 0;
+
 EventLoop::EventLoop()
     : looping_(false),
       thread_id_(std::this_thread::get_id()),
       quit_flag_(false),
       epoller_(std::make_unique<Epoller>(this)),
-      timer_manager_(this) {
+      timer_manager_(this),
+      sequence_(sequence_generator_++) {
     wakeup_fd_ = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (wakeup_fd_ < 0) FATAL("Failed to create eventfd!");
     if (!thread_local_eventloop)
         thread_local_eventloop = this;
     else
-        FATAL(fmt::format("Another EventLoop has existed in this thread {}.",
-                          IdToInt(thread_id_)));
-    DEBUG(fmt::format("EventLoop created in thread {}", IdToInt(thread_id_)));
+        FATAL(fmt::format("Another EventLoop {} has existed in this thread.",
+                          thread_local_eventloop->sequence_));
+    DEBUG(fmt::format("EventLoop {} created ", sequence_));
     wakeup_channel_ = std::make_unique<Channel>(this, wakeup_fd_);
     wakeup_channel_->set_read_callback([this] { WakeUpReadHandle(); });
     wakeup_channel_->EnableReading();
@@ -56,8 +59,7 @@ void EventLoop::Loop() {
     // if someone Quit() before Loop()
     quit_flag_ = false;
     looping_ = true;
-    INFO(fmt::format("EventLoop in thread {} start looping.",
-                     IdToInt(thread_id_)));
+    INFO(fmt::format("EventLoop {} starts looping.", sequence_));
     while (!quit_flag_) {
         active_channels_.clear();
         epoller_->Epoll(kEpollTimeoutMs, &active_channels_);
@@ -66,8 +68,7 @@ void EventLoop::Loop() {
         }
         HandlePendingCallbacks();
     }
-    INFO(fmt::format("EventLoop in thread {} Stop looping.",
-                     IdToInt(thread_id_)));
+    INFO(fmt::format("EventLoop {} stops looping.", sequence_));
     looping_ = false;
 }
 

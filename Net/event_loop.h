@@ -5,6 +5,7 @@
 #ifndef MYWEBSERVER_EVENT_LOOP_H
 #define MYWEBSERVER_EVENT_LOOP_H
 
+#include <atomic>
 #include <functional>
 #include <thread>
 
@@ -71,6 +72,9 @@ class EventLoop {
     std::unique_ptr<Channel> wakeup_channel_;
     std::mutex mutex_;
     std::vector<Callback> pending_callbacks_;
+    int sequence_;
+
+    static std::atomic<int> sequence_generator_;
 };
 
 #endif  // MYWEBSERVER_EVENT_LOOP_H

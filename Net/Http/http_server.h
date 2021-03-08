@@ -5,6 +5,7 @@
 #ifndef MYWEBSERVER_HTTP_SERVER_H
 #define MYWEBSERVER_HTTP_SERVER_H
 
+#include <map>
 #include <unordered_map>
 
 #include "Net/Http/http_parser.h"
@@ -37,7 +38,6 @@ class HttpServer : noncopyable {
     void OnRequest(const TcpConnectionPtr& conn, const HttpRequest& req);
     void AfterWriting(const TcpConnectionPtr& conn);
 
-    std::unordered_map<TcpConnectionPtr, HttpParserPtr> conn2parser_;
     TcpServer server_;
     // Response generation by request
     ResponseCallback response_callback_;
