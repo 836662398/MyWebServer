@@ -10,7 +10,7 @@ bool benchmark = false;
 
 using std::string;
 
-void onRequest(const HttpRequest& req, HttpResponse* resp) {
+void OnRequest(const HttpRequest& req, HttpResponse* resp) {
     std::cout << "Headers " << req.PrintMethod() << " " << req.path()
               << std::endl;
     if (!benchmark) {
@@ -47,14 +47,14 @@ void onRequest(const HttpRequest& req, HttpResponse* resp) {
 }
 
 int main(int argc, char* argv[]) {
-    int numThreads = 0;
+    int numThreads = 4;
     if (argc > 1) {
         benchmark = true;
         numThreads = atoi(argv[1]);
     }
     EventLoop loop;
-    HttpServer server(&loop, 8000, 4, "dummy");
-    server.set_response_callback(onRequest);
+    HttpServer server(&loop, 8000, numThreads, "dummy");
+    server.set_response_callback(OnRequest);
     server.StartListening();
     loop.Loop();
 }
