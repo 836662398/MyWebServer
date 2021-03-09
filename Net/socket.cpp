@@ -24,7 +24,8 @@ void Socket::Bind(const SockAddress& localaddr) {
                reinterpret_cast<const sockaddr*>(localaddr.get_sockaddr_in6()),
                static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
     if (ret < 0) {
-        FATAL("Socket failed to bind.");
+//        ERROR(fmt::format("Socket failed to bind, {}.", strerror_tl(errno)));
+        FATAL(fmt::format("Socket failed to bind, {}.", strerror_tl(errno)));
     }
 }
 
@@ -64,7 +65,7 @@ void Socket::setReuseAddr(bool on) {
     int ret = ::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, &optval,
                            static_cast<socklen_t>(sizeof optval));
     if (ret < 0 && on) {
-        ERROR("SO_REUSEADDR failed.");
+        ERROR(fmt::format("SO_REUSEADDR failed. {}.", strerror_tl(errno)));
     }
 }
 
@@ -97,11 +98,6 @@ int Socket::getSocketError(int sockfd) {
     } else {
         return optval;
     }
-}
-
-// because of RVO, need't copy construction
-Socket Socket::CreateSocket(sa_family_t family) {
-    return Socket(CreateSocketFd(family));
 }
 
 int Socket::CreateSocketFd(sa_family_t family) {

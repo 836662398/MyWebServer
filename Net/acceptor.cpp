@@ -15,7 +15,7 @@ static std::string unit_name = "Acceptor";
 Acceptor::Acceptor(EventLoop *loop, const SockAddress &listenaddr,
                    bool is_reuseport)
     : loop_(loop),
-      accept_socket_(Socket::CreateSocket(listenaddr.family())),
+      accept_socket_(Socket::CreateSocketFd(listenaddr.family())),
       accept_channel_(loop_, accept_socket_.fd()),
       listening_(false),
       idle_fd_(::open("/dev/null", O_RDONLY | O_CLOEXEC)) {

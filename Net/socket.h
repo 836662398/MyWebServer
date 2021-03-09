@@ -39,15 +39,14 @@ class Socket : noncopyable {
     // Enable/disable SO_KEEPALIVE
     void setKeepAlive(bool on);
 
-    // create nonblocking Socket, abort if fail
-    static Socket CreateSocket(sa_family_t family);
+    static int CreateSocketFd(sa_family_t family);
 
    public:
     // utility about sockfd
     static void close(int sockfd);
 
     static int getSocketError(int sockfd);
-    static int CreateSocketFd(sa_family_t family);
+
     static struct sockaddr_in6 getLocalAddr(int sockfd);
     static struct sockaddr_in6 getPeerAddr(int sockfd);
     static bool IsSelfConnect(int sockfd);

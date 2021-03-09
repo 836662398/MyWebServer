@@ -2,12 +2,12 @@
 
 #include "Net/Http/http_server.h"
 
-bool benchmark = false;
+bool benchmark = true;
 
 void OnRequest(const HttpRequest& req, HttpResponse* resp) {
-    std::cout << "Headers " << req.PrintMethod() << " " << req.path()
-              << std::endl;
     if (!benchmark) {
+        std::cout << "Headers " << req.PrintMethod() << " " << req.path()
+                  << std::endl;
         auto headers = req.headers();
         for (const auto& header : headers) {
             std::cout << header.first << ": " << header.second << std::endl;
@@ -33,14 +33,14 @@ void OnRequest(const HttpRequest& req, HttpResponse* resp) {
 int main(int argc, char** argv) {
     int numThreads = 11;
     if (argc > 1) {
-        benchmark = true;
+        benchmark = false;
         numThreads = atoi(argv[1]);
     }
     EventLoop loop;
     HttpServer server(&loop, 80, numThreads, "WebServer");
     server.set_response_callback(OnRequest);
     server.StartListening();
-    std::cout<<"Server starts"<<std::endl;
+    std::cout << "Server starts" << std::endl;
     loop.Loop();
     return 0;
 }

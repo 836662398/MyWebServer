@@ -79,14 +79,14 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
     }
     // if nothing is in output queue, try writing directly
     if (!channel_.IsWriting() && output_buffer_.ReadableBytes() == 0) {
-        nwritten = ::write(channel_.fd(), data, len);
-        if (nwritten >= 0) {
+        while ((nwritten = ::write(channel_.fd(), data, len)) > 0) {
             remaining = len - nwritten;
             if (remaining == 0 && write_complete_callback_) {
                 loop_->QueueInLoop(
                     std::bind(write_complete_callback_, shared_from_this()));
             }
-        } else if (nwritten < 0) {
+        }
+        if (nwritten < 0) {
             nwritten = 0;
             if (errno != EWOULDBLOCK) {
                 ERROR("TcpConnection::sendInLoop");
@@ -102,9 +102,9 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
         size_t oldLen = output_buffer_.ReadableBytes();
         output_buffer_.Append(static_cast<const char *>(data) + nwritten,
                               remaining);
-        if (!channel_.IsWriting()) {
-            channel_.EnableWriting();
-        }
+        //        if (!channel_.IsWriting()) {
+        //            channel_.EnableWriting();
+        //        }
     }
 }
 
@@ -128,7 +128,7 @@ void TcpConnection::ConnEstablished() {
     loop_->AssertInLoopThread();
     assert(state_ == kConnecting);
     state_ = kConnected;
-    channel_.EnableReading();
+    channel_.ETInit();
     connection_callback_(shared_from_this());
 }
 
@@ -136,7 +136,7 @@ void TcpConnection::ConnDestroy() {
     loop_->AssertInLoopThread();
     if (state_ == kConnected) {
         state_ = kDisconnected;
-        channel_.DisableAll();  // can be omitted
+//        channel_.DisableAll();  // can be omitted
         connection_callback_(shared_from_this());
     }
     channel_.Remove();
@@ -145,12 +145,13 @@ void TcpConnection::ConnDestroy() {
 void TcpConnection::HandleRead() {
     loop_->AssertInLoopThread();
     int saved_errno = 0;
-    ssize_t n = input_buffer_.ReadFd(channel_.fd(), &saved_errno);
-    if (n > 0) {
+    ssize_t n;
+    while ((n = input_buffer_.ReadFd(channel_.fd(), &saved_errno)) > 0)
         message_callback_(shared_from_this(), &input_buffer_);
-    } else if (n == 0) {
+    if (n == 0) {
         HandleClose();
     } else {
+        if (saved_errno == EWOULDBLOCK) return;
         errno = saved_errno;
         ERROR("HandleRead() failed!");
         HandleError();
@@ -159,19 +160,22 @@ void TcpConnection::HandleRead() {
 
 void TcpConnection::HandleWrite() {
     loop_->AssertInLoopThread();
+    if (output_buffer_.ReadableBytes() == 0) return;
     if (channel_.IsWriting()) {
-        ssize_t n = ::write(channel_.fd(), output_buffer_.ReadData(),
-                            output_buffer_.ReadableBytes());
-        if (n > 0) {
+        ssize_t n;
+        while ((n = ::write(channel_.fd(), output_buffer_.ReadData(),
+                            output_buffer_.ReadableBytes())) > 0) {
             output_buffer_.Skip(n);
             if (output_buffer_.ReadableBytes() == 0) {
-                channel_.DisableWriting();
+//                channel_.DisableWriting();
                 if (write_complete_callback_) {
                     loop_->QueueInLoop(std::bind(write_complete_callback_,
                                                  shared_from_this()));
                 }
             }
-        } else {
+        }
+        if (n <= 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) return;
             ERROR("HandleWrite() failed!");
         }
     } else {
@@ -181,7 +185,7 @@ void TcpConnection::HandleWrite() {
 
 void TcpConnection::HandleClose() {
     loop_->AssertInLoopThread();
-    DEBUG(fmt::format("TcpConnection fd = {}, is closed!", channel_.fd()));
+    TRACE(fmt::format("TcpConnection fd = {}, is closed!", channel_.fd()));
     assert(state_ == kConnected || state_ == kDisconnecting);
     // we don't close fd, leave it to Socket dtor
     state_ = kDisconnected;
@@ -223,4 +227,3 @@ void TcpConnection::DefaultMessageCallback(const TcpConnectionPtr &conn,
     buffer->Reset();
     INFO("No MessageCallback was set!");
 }
-

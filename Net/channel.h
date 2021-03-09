@@ -31,6 +31,7 @@ class Channel : noncopyable {
     int set_revents(int revent) { revents_ = revent; }
     EventLoop* loop() { return loop_; }
 
+    void ETInit();
     void EnableReading();
     void EnableWriting();
     void DisableReading();
@@ -49,6 +50,7 @@ class Channel : noncopyable {
     static const int kNoneEvent = 0;
     static const int kReadEvent = EPOLLIN | EPOLLPRI;
     static const int kWriteEvent = EPOLLOUT;
+    static const int kETEvent = EPOLLIN | EPOLLPRI | EPOLLOUT | EPOLLET;
 
     void Update(int operation);
     static std::string EventsToString(int fd, int ev);

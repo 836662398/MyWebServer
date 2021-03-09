@@ -10,6 +10,8 @@
 #include "Net/event_loop_thread.h"
 #include "Net/tcp_client.h"
 
+
+
 class EchoClient {
    public:
     EchoClient(EventLoop* loop, const SockAddress& peer_addr)
@@ -25,9 +27,11 @@ class EchoClient {
     void Connect() { client_.Connect(); }
 
     void Send(std::string_view msg){
-        client_.connection()->Send(msg);
-        if(msg == "exit"){
+        if(client_.connection())
+            client_.connection()->Send(msg);
+        if(msg == "exit" || msg == "quit"){
             client_.Disconnect();
+            exit(0);
         }
     }
 
