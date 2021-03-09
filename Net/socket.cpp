@@ -14,9 +14,7 @@
 // for logging
 static std::string unit_name = "Socket";
 
-Socket::~Socket() {
-    close(sockfd_);
-}
+Socket::~Socket() { close(sockfd_); }
 
 void Socket::Bind(const SockAddress& localaddr) {
     int ret =
@@ -24,7 +22,7 @@ void Socket::Bind(const SockAddress& localaddr) {
                reinterpret_cast<const sockaddr*>(localaddr.get_sockaddr_in6()),
                static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
     if (ret < 0) {
-        FATAL("Socket failed to bind.");
+        FATAL(fmt::format("Socket failed to bind. {}.", strerror_tl(errno)));
     }
 }
 
@@ -99,11 +97,6 @@ int Socket::getSocketError(int sockfd) {
     }
 }
 
-// because of RVO, need't copy construction
-Socket Socket::CreateSocket(sa_family_t family) {
-    return Socket(CreateSocketFd(family));
-}
-
 int Socket::CreateSocketFd(sa_family_t family) {
     int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
                           IPPROTO_TCP);
@@ -166,7 +159,7 @@ int Socket::accept(int sockfd, struct sockaddr_in6* addr) {
                            SOCK_NONBLOCK | SOCK_CLOEXEC);
     if (connfd < 0) {
         int savedErrno = errno;
-//        ERROR("Socket failed to accept");
+        //        ERROR("Socket failed to accept");
         switch (savedErrno) {
             case EAGAIN:
             case ECONNABORTED:
