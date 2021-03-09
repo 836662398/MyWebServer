@@ -32,6 +32,7 @@ class Channel : noncopyable {
     EventLoop* loop() { return loop_; }
 
     void ETInit();
+    void ETEnableReading();
     void EnableReading();
     void EnableWriting();
     void DisableReading();

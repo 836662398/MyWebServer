@@ -185,7 +185,7 @@ void TcpConnection::HandleWrite() {
 
 void TcpConnection::HandleClose() {
     loop_->AssertInLoopThread();
-    TRACE(fmt::format("TcpConnection fd = {}, is closed!", channel_.fd()));
+    DEBUG(fmt::format("[{}] disconnects.", name_));
     assert(state_ == kConnected || state_ == kDisconnecting);
     // we don't close fd, leave it to Socket dtor
     state_ = kDisconnected;

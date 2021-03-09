@@ -45,6 +45,12 @@ void Channel::ETInit() {
     events_ = kETEvent;
     Update(op);
 }
+void Channel::ETEnableReading() {
+    if (IsReading()) return;
+    auto op = (events_ == kNoneEvent ? EPOLL_CTL_ADD : EPOLL_CTL_MOD);
+    events_ |= kReadEvent | EPOLLET;
+    Update(op);
+}
 void Channel::EnableReading() {
     if (IsReading()) return;
     auto op = (events_ == kNoneEvent ? EPOLL_CTL_ADD : EPOLL_CTL_MOD);
@@ -98,3 +104,4 @@ std::string Channel::EventsToString(int fd, int ev) {
 
     return oss.str();
 }
+

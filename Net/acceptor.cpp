@@ -34,7 +34,7 @@ void Acceptor::Listen() {
     loop_->AssertInLoopThread();
     listening_ = true;
     accept_socket_.Listen();
-    accept_channel_.EnableReading();
+    accept_channel_.ETEnableReading();
 }
 
 void Acceptor::HandleRead() {
