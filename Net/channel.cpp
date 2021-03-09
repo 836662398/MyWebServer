@@ -25,6 +25,7 @@ void Channel::HandleEvent() {
     if (revents_ & EPOLLHUP) {
         if (close_callback_) close_callback_();
         ERROR("EPOLLHUP!");
+        return;
     }
     if (revents_ & (EPOLLERR)) {
         if (error_callback_) error_callback_();

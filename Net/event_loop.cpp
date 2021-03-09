@@ -20,6 +20,7 @@ class IgnoreSigPipe {
    public:
     IgnoreSigPipe() { ::signal(SIGPIPE, SIG_IGN); }
 };
+
 IgnoreSigPipe init_sig;
 
 }  // namespace
