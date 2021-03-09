@@ -58,7 +58,7 @@ void TcpServer::HandleNewConn(int sockfd, const SockAddress &peer_addr) {
     snprintf(buf, sizeof buf, "-%s#%d", ip_port_.c_str(), next_conn_id_);
     ++next_conn_id_;
     std::string conn_name = name_ + buf;
-    INFO(fmt::format("HandleNewConn(): new connection [{}] from {}", conn_name,
+    INFO(fmt::format("new connection [{}] from {} is established.", conn_name,
                      peer_addr.IpPort()));
 
     SockAddress local_addr = SockAddress::CreateSockAddressByFd(sockfd);

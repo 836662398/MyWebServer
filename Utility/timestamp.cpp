@@ -3,13 +3,15 @@
 //
 #include "timestamp.h"
 
+#include <inttypes.h>
+
 #include <string>
 
 std::string Timestamp::FormatS() const {
     char buf[32] = {0};
     int64_t seconds = us_ / kMicrosecondsPerSecond;
     int64_t us = us_ % kMicrosecondsPerSecond;
-    snprintf(buf, sizeof(buf), "%lld.%06lld s", seconds, us);
+    snprintf(buf, sizeof(buf), "%" PRId64 ".%06" PRId64 "s", seconds, us);
     return buf;
 }
 

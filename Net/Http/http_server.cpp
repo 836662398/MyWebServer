@@ -55,6 +55,7 @@ void HttpServer::OnRequest(const TcpConnectionPtr &conn,
     HttpResponse response(true);
     response_callback_(req, &response);
     Buffer buf;
+    // sent message generation by response
     response.AppendToBuffer(&buf);
     conn->Send(&buf);
 }
