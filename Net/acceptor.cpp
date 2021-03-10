@@ -42,23 +42,20 @@ void Acceptor::HandleRead() {
     SockAddress peer_addr;
     int connfd = 0;
     // accept in while is suitable for short connection
-    while ((connfd = accept_socket_.accept(&peer_addr)) >= 0) {
+    if ((connfd = accept_socket_.accept(&peer_addr)) >= 0) {
         if (new_connection_callback_) {
             new_connection_callback_(connfd, peer_addr);
         } else {
             ERROR("new_connection_callback_ isn't set!");
             Socket::close(connfd);
         }
-    }
-    if (errno != EWOULDBLOCK) {
+    } else if (errno != EWOULDBLOCK) {
+        ERROR_P("accept() failed!");
         if (errno == EMFILE) {
-            ERROR("EMFILE error, fds overflow!");
             ::close(idle_fd_);
             idle_fd_ = ::accept(accept_socket_.fd(), NULL, NULL);
             ::close(idle_fd_);
             idle_fd_ = ::open("/dev/null", O_RDONLY | O_CLOEXEC);
-        } else {
-            ERROR("accept() failed!");
         }
     }
 }

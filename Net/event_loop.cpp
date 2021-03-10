@@ -34,7 +34,7 @@ EventLoop::EventLoop()
       timer_manager_(this),
       sequence_(sequence_generator_++) {
     wakeup_fd_ = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-    if (wakeup_fd_ < 0) FATAL("Failed to create eventfd!");
+    if (wakeup_fd_ < 0) FATAL_P("Failed to create eventfd");
     if (!thread_local_eventloop)
         thread_local_eventloop = this;
     else
@@ -103,7 +103,7 @@ void EventLoop::WakeUp() {
     uint64_t num = 1;
     ssize_t n = ::write(wakeup_fd_, &num, sizeof num);
     if (n != 8) {
-        ERROR(fmt::format("WakeUp() writed {} bytes instead of 8!", n));
+        ERROR_P(fmt::format("WakeUp() writed {} bytes instead of 8!", n));
     }
 }
 
@@ -162,7 +162,7 @@ void EventLoop::WakeUpReadHandle() {
     uint64_t buf;
     ssize_t n = ::read(wakeup_fd_, &buf, sizeof buf);
     if (n != 8)
-        ERROR(fmt::format("WakeUpReadHandle() read {} bytes instead of 8!", n));
+        ERROR_P(fmt::format("WakeUpReadHandle() read {} bytes instead of 8!", n));
 }
 
 void EventLoop::HandlePendingCallbacks() {
