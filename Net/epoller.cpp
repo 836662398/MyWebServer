@@ -15,7 +15,7 @@ static std::string unit_name = "Epoller";
 Epoller::Epoller(EventLoop *loop) : loop_(loop), events_(kInitEventListSize) {
     epollfd_ = ::epoll_create1(EPOLL_CLOEXEC);
     if (epollfd_ < 0) {
-        FATAL("Failed to epoll_create1!");
+        FATAL_P("Failed to epoll_create1!");
     }
 }
 
@@ -40,7 +40,7 @@ void Epoller::UpdateChannel(Channel *channel, int operation) {
     TRACE(fmt::format("Operation: {}, {}", OperationToString(operation),
                       channel->EventsToString()));
     if (::epoll_ctl(epollfd_, operation, fd, &event) < 0) {
-        ERROR(fmt::format("Failed to epoll_ctl, operation: {}, {}",
+        ERROR_P(fmt::format("Failed to epoll_ctl, operation: {}, {}",
                           OperationToString(operation),
                           channel->EventsToString()));
     }
@@ -71,7 +71,7 @@ Timestamp Epoller::Epoll(int timeout_ms,
     else {
         if (saved_errno != EINTR) {
             errno = saved_errno;
-            ERROR("epoll_wait() failed!");
+            ERROR_P("epoll_wait() failed!");
         }
     }
     return now;

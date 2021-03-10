@@ -34,7 +34,7 @@ SockAddress SockAddress::CreateSockAddressByFd(int sockfd) {
     socklen_t addrlen = static_cast<socklen_t>(sizeof localaddr);
     if (::getsockname(sockfd, reinterpret_cast<struct sockaddr *>(&localaddr),
                       &addrlen) < 0) {
-        ERROR("getsockname() failed");
+        ERROR_P("getsockname() failed");
     }
     return SockAddress(localaddr);
 }
@@ -45,7 +45,7 @@ void SockAddress::IpPortToSockaddr(const char *ip, uint16_t port,
     addr->sin_family = AF_INET;
     addr->sin_port = htobe16(port);
     if (::inet_pton(AF_INET, ip, &addr->sin_addr) <= 0) {
-        ERROR("inet_pton error!");
+        ERROR_P("inet_pton error!");
     }
 }
 void SockAddress::IpPortToSockaddr(const char *ip, uint16_t port,
@@ -53,7 +53,7 @@ void SockAddress::IpPortToSockaddr(const char *ip, uint16_t port,
     addr->sin6_family = AF_INET6;
     addr->sin6_port = htobe16(port);
     if (inet_pton(AF_INET6, ip, &addr->sin6_addr) <= 0) {
-        ERROR("inet_pton error!");
+        ERROR_P("inet_pton error!");
     }
 }
 
@@ -109,7 +109,7 @@ bool SockAddress::Resolve(std::string_view hostname, SockAddress *out) {
         return true;
     } else {
         if (ret) {
-            ERROR("SockAddress::Resolve error!");
+            ERROR_P("SockAddress::Resolve error!");
         }
         return false;
     }

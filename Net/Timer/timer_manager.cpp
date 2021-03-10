@@ -18,7 +18,7 @@ namespace {
 int CreateTimerfd() {
     int timerfd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
     if (timerfd < 0) {
-        FATAL("timerfd_create() failed!");
+        FATAL_P("timerfd_create() failed!");
     }
     return timerfd;
 }
@@ -92,7 +92,7 @@ void TimerManager::ResetTimerfd(Timestamp deadline) {
     new_value.it_value = TimeFromNow(deadline);
     int ret = ::timerfd_settime(timerfd_, 0, &new_value, &old_value);
     if (ret < 0)
-        ERROR("timerfd_settime() failed!");
+        ERROR_P("timerfd_settime() failed!");
     else {
         earliest_time_set_ = deadline;
         no_time_set_ = false;
@@ -123,6 +123,6 @@ void TimerManager::ReadTimerfd() {
     uint64_t howmany;
     ssize_t n = ::read(timerfd_, &howmany, sizeof howmany);
     if (n != sizeof howmany) {
-        ERROR(fmt::format("timerfd read() return {} bytes instead of 8", n));
+        ERROR_P(fmt::format("timerfd read() return {} bytes instead of 8", n));
     }
 }

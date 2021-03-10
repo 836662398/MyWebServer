@@ -51,14 +51,12 @@ void Acceptor::HandleRead() {
         }
     }
     if(connfd < 0 && errno != EWOULDBLOCK){
+        ERROR_P("accept() failed!");
         if (errno == EMFILE) {
-            ERROR("EMFILE error, fds overflow!");
             ::close(idle_fd_);
             idle_fd_ = ::accept(accept_socket_.fd(), NULL, NULL);
             ::close(idle_fd_);
             idle_fd_ = ::open("/dev/null", O_RDONLY | O_CLOEXEC);
-        } else {
-            ERROR("accept() failed!");
         }
     }
 }

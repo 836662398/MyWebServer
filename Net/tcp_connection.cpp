@@ -91,7 +91,7 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
         if (nwritten < 0) {
             nwritten = 0;
             if (errno != EWOULDBLOCK) {
-                ERROR("TcpConnection::sendInLoop");
+                ERROR_P("write()");
                 if (errno == EPIPE || errno == ECONNRESET) {
                     faultError = true;
                 }
@@ -156,7 +156,7 @@ void TcpConnection::HandleRead() {
     } else {
         if (saved_errno == EWOULDBLOCK) return;
         errno = saved_errno;
-        ERROR("HandleRead() failed!");
+        ERROR_P("ReadFd() failed!");
         HandleError();
     }
 }
@@ -180,10 +180,10 @@ void TcpConnection::HandleWrite() {
         }
         if (n <= 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) return;
-            ERROR("HandleWrite() failed!");
+            ERROR_P("write() failed!");
         }
     } else {
-        ERROR(fmt::format("Connection fd = {} can't write!", channel_.fd()));
+        ERROR(fmt::format("[{}] can't write!", name_));
     }
 }
 
@@ -202,7 +202,8 @@ void TcpConnection::HandleClose() {
 
 void TcpConnection::HandleError() {
     int err = Socket::getSocketError(channel_.fd());
-    ERROR(fmt::format("[{}] HandleError().", name_));
+    ERROR_P(
+        fmt::format("[{}] HandleError(). error - {}", name_, strerror_tl(err)));
 }
 
 const char *TcpConnection::PrintState() {

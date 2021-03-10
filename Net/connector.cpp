@@ -84,7 +84,7 @@ void Connector::Connect() {
             break;
 
         default:
-            ERROR("Connect() failed.");
+            ERROR_P("Connect() failed.");
             Socket::close(sockfd);
             break;
     }
@@ -123,7 +123,7 @@ void Connector::HandleWrite() {
         int sockfd = RemoveAndResetChannel();
         int err = Socket::getSocketError(sockfd);
         if (err) {
-            ERROR(fmt::format("HandleWrite() - SO_ERROR = {}.", err));
+            ERROR(fmt::format("HandleWrite() - SO_ERROR = {}.", strerror_tl(err)));
             Retry(sockfd);
         } else if (Socket::IsSelfConnect(sockfd)) {
             ERROR("HandleWrite() - Self Connect");
@@ -141,11 +141,10 @@ void Connector::HandleWrite() {
 }
 
 void Connector::HandleError() {
-    ERROR(fmt::format("HandleError(), state {}", state_));
     if (state_ == kConnecting) {
         int sockfd = RemoveAndResetChannel();
         int err = Socket::getSocketError(sockfd);
-        ERROR(fmt::format("HandleError(), SO_ERROR {} {}", err));
+        ERROR(fmt::format("HandleError(), SO_ERROR - {}", strerror_tl(err)));
         Retry(sockfd);
     }
 }

@@ -35,11 +35,11 @@ EventLoop::EventLoop()
       timer_manager_(this),
       sequence_(sequence_generator_++) {
     wakeup_fd_ = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-    if (wakeup_fd_ < 0) FATAL("Failed to create eventfd!");
+    if (wakeup_fd_ < 0) FATAL_P("Failed to create eventfd!");
     if (!thread_local_eventloop)
         thread_local_eventloop = this;
     else
-        FATAL(fmt::format("Another EventLoop {} has existed in this thread.",
+        FATAL_P(fmt::format("Another EventLoop {} has existed in this thread.",
                           thread_local_eventloop->sequence_));
     DEBUG(fmt::format("EventLoop {} created ", sequence_));
     wakeup_channel_ = std::make_unique<Channel>(this, wakeup_fd_);
@@ -104,7 +104,7 @@ void EventLoop::WakeUp() {
     uint64_t num = 1;
     ssize_t n = ::write(wakeup_fd_, &num, sizeof num);
     if (n != 8) {
-        ERROR(fmt::format("WakeUp() writed {} bytes instead of 8!", n));
+        ERROR_P(fmt::format("WakeUp() writed {} bytes instead of 8!", n));
     }
 }
 
@@ -148,7 +148,7 @@ bool EventLoop::IsInLoopThread() {
 void EventLoop::AssertInLoopThread() {
 #ifndef NDEBUG
     if (!IsInLoopThread()) {
-        FATAL(fmt::format(
+        FATAL_P(fmt::format(
             "EventLoop was created in thread {}, the current thread id is {}",
             IdToInt(thread_id_), IdToInt(std::this_thread::get_id())));
     }
@@ -163,7 +163,7 @@ void EventLoop::WakeUpReadHandle() {
     uint64_t buf;
     ssize_t n = ::read(wakeup_fd_, &buf, sizeof buf);
     if (n != 8)
-        ERROR(fmt::format("WakeUpReadHandle() read {} bytes instead of 8!", n));
+        ERROR_P(fmt::format("WakeUpReadHandle() read {} bytes instead of 8!", n));
 }
 
 void EventLoop::HandlePendingCallbacks() {

@@ -15,8 +15,7 @@ EventLoopThreadPool::EventLoopThreadPool(EventLoop *baseloop, int threadnum,
       thread_num_(threadnum),
       started_(false),
       next_(0) {
-    if(thread_num_ < 0)
-        FATAL("thread_num_ < 0 !");
+    if(thread_num_ < 0) FATAL_P("thread_num_ < 0 !");
 }
 EventLoopThreadPool::~EventLoopThreadPool() {
     TRACE("~EventLoopThreadPool().");
