@@ -128,6 +128,7 @@ void TcpConnection::ConnEstablished() {
     loop_->AssertInLoopThread();
     assert(state_ == kConnecting);
     state_ = kConnected;
+    socket_.setTcpNoDelay(true);
     channel_.EnableReading();
     connection_callback_(shared_from_this());
 }

@@ -2,6 +2,8 @@
 
 #include "Net/Http/http_server.h"
 
+#include "Utility/logging.h"
+
 bool benchmark = true;
 
 void OnRequest(const HttpRequest& req, HttpResponse* resp) {
@@ -31,13 +33,28 @@ void OnRequest(const HttpRequest& req, HttpResponse* resp) {
 }
 
 int main(int argc, char** argv) {
-    int numThreads = 11;
-    if (argc > 1) {
-        benchmark = false;
-        numThreads = atoi(argv[1]);
+    int num_thread = 4;
+    // parse args
+    int opt;
+    const char *str = "t:b";
+    while ((opt = getopt(argc, argv, str)) != -1) {
+        switch (opt) {
+            case 't': {
+                num_thread = atoi(optarg) - 1;
+                std::cout<<"Thread's num is "<<num_thread + 1<<std::endl;
+                break;
+            }
+            case 'b': {
+                spdlog::get("log")->set_level(spdlog::level::off);
+                std::cout<<"Benchmark starts. Log closes."<<std::endl;
+                break;
+            }
+            default:
+                break;
+        }
     }
     EventLoop loop;
-    HttpServer server(&loop, 80, numThreads, "WebServer");
+    HttpServer server(&loop, 80, num_thread, "WebServer");
     server.set_response_callback(OnRequest);
     server.StartListening();
     std::cout << "Server starts" << std::endl;
