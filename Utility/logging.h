@@ -8,13 +8,15 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 
+const char* strerror_tl(int saved_errno);
+
 #define TRACE(x) spdlog::get("log")->trace("[{}]{}", unit_name, x)
 #define DEBUG(x) spdlog::get("log")->debug("[{}]{}", unit_name, x)
 #define INFO(x) spdlog::get("log")->info("[{}]{}", unit_name, x)
-#define ERROR(x) spdlog::get("log")->error("[{}]{}", unit_name, x)
-#define FATAL(x) spdlog::get("log")->error("[{}]{} System exit.", unit_name, x),abort()
+#define ERROR(x) spdlog::get("log")->error("[{}]{} error - {}", unit_name, x, strerror_tl(errno))
+#define FATAL(x) spdlog::get("log")->error("[{}]{} error - {}.System exit.", unit_name, x, strerror_tl(errno)),abort()
 
-const char* strerror_tl(int saved_errno);
+
 
 class LOG {
    public:

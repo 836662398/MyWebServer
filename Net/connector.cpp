@@ -31,8 +31,7 @@ Connector::~Connector() {
 
 void Connector::Start() {
     connect_ = true;
-    loop_->RunInLoop(
-        std::bind(&Connector::StartInLoop, this));
+    loop_->RunInLoop(std::bind(&Connector::StartInLoop, this));
 }
 
 void Connector::StartInLoop() {
@@ -85,7 +84,7 @@ void Connector::Connect() {
             break;
 
         default:
-            ERROR(fmt::format("Connect() failed, error {}", savedErrno));
+            ERROR("Connect() failed.");
             Socket::close(sockfd);
             break;
     }
@@ -124,8 +123,7 @@ void Connector::HandleWrite() {
         int sockfd = RemoveAndResetChannel();
         int err = Socket::getSocketError(sockfd);
         if (err) {
-            ERROR(fmt::format("HandleWrite() - SO_ERROR = {} {}", err,
-                              strerror_tl(err)));
+            ERROR(fmt::format("HandleWrite() - SO_ERROR = {}.", err));
             Retry(sockfd);
         } else if (Socket::IsSelfConnect(sockfd)) {
             ERROR("HandleWrite() - Self Connect");
@@ -147,8 +145,7 @@ void Connector::HandleError() {
     if (state_ == kConnecting) {
         int sockfd = RemoveAndResetChannel();
         int err = Socket::getSocketError(sockfd);
-        INFO(fmt::format("HandleError(), SO_ERROR {} {}", err,
-                         strerror_tl(err)));
+        ERROR(fmt::format("HandleError(), SO_ERROR {} {}", err));
         Retry(sockfd);
     }
 }

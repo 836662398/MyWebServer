@@ -202,7 +202,7 @@ void TcpConnection::HandleClose() {
 
 void TcpConnection::HandleError() {
     int err = Socket::getSocketError(channel_.fd());
-    ERROR(fmt::format("[{}] HandleError() err:{}", name_, strerror_tl(err)));
+    ERROR(fmt::format("[{}] HandleError().", name_));
 }
 
 const char *TcpConnection::PrintState() {
