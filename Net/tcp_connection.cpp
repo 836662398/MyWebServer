@@ -81,9 +81,11 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
     if (!channel_.IsWriting() && output_buffer_.ReadableBytes() == 0) {
         while ((nwritten = ::write(channel_.fd(), data, len)) > 0) {
             remaining = len - nwritten;
-            if (remaining == 0 && write_complete_callback_) {
-                loop_->QueueInLoop(
-                    std::bind(write_complete_callback_, shared_from_this()));
+            if (remaining == 0) {
+                if (write_complete_callback_)
+                    loop_->QueueInLoop(std::bind(write_complete_callback_,
+                                                 shared_from_this()));
+                break;
             }
         }
         if (nwritten < 0) {
@@ -128,6 +130,7 @@ void TcpConnection::ConnEstablished() {
     loop_->AssertInLoopThread();
     assert(state_ == kConnecting);
     state_ = kConnected;
+    socket_.setTcpNoDelay(true);
     channel_.ETInit();
     connection_callback_(shared_from_this());
 }
@@ -136,7 +139,7 @@ void TcpConnection::ConnDestroy() {
     loop_->AssertInLoopThread();
     if (state_ == kConnected) {
         state_ = kDisconnected;
-//        channel_.DisableAll();  // can be omitted
+        //        channel_.DisableAll();  // can be omitted
         connection_callback_(shared_from_this());
     }
     channel_.Remove();
@@ -167,11 +170,12 @@ void TcpConnection::HandleWrite() {
                             output_buffer_.ReadableBytes())) > 0) {
             output_buffer_.Skip(n);
             if (output_buffer_.ReadableBytes() == 0) {
-//                channel_.DisableWriting();
+                //                channel_.DisableWriting();
                 if (write_complete_callback_) {
                     loop_->QueueInLoop(std::bind(write_complete_callback_,
                                                  shared_from_this()));
                 }
+                break;
             }
         }
         if (n <= 0) {
