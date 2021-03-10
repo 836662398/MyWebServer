@@ -50,7 +50,7 @@ void Acceptor::HandleRead() {
             Socket::close(connfd);
         }
     }
-    if (errno != EWOULDBLOCK) {
+    if(connfd < 0 && errno != EWOULDBLOCK){
         if (errno == EMFILE) {
             ERROR("EMFILE error, fds overflow!");
             ::close(idle_fd_);
