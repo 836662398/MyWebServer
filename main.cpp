@@ -22,7 +22,7 @@ void OnRequest(const HttpRequest& req, HttpResponse* resp) {
         resp->setContentType("text/html");
         resp->set_body(
             "<html><head><title>Xu Rui's Homepage</title></head>"
-            "<body><h4>Xu Rui's Homepage</h4><p><a "
+            "<body><h3>Xu Rui's Homepage</h3><p><a "
             "href=\"https://blog.csdn.net/qq_40586164\">Xu Rui on "
             "CSDN</a>.</body></html>");
     } else {
@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
                 break;
             }
             case 'b': {
-                spdlog::get("log")->set_level(spdlog::level::off);
-                std::cout<<"Benchmark starts. Log closes."<<std::endl;
+                spdlog::get("log")->set_level(spdlog::level::err);
+                std::cout<<"Benchmark starts."<<std::endl;
                 break;
             }
             default:

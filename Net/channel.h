@@ -31,7 +31,6 @@ class Channel : noncopyable {
     int set_revents(int revent) { revents_ = revent; }
     EventLoop* loop() { return loop_; }
 
-    void ETInit();
     void ETEnableReading();
     void EnableReading();
     void EnableWriting();

@@ -52,6 +52,7 @@ void HttpServer::OnMessage(const TcpConnectionPtr &conn, Buffer *buf) {
 void HttpServer::OnRequest(const TcpConnectionPtr &conn,
                            const HttpRequest &req) {
     const std::string &connection = req.GetHeader("Connection");
+    // set short connection
     HttpResponse response(true);
     response_callback_(req, &response);
     Buffer buf;

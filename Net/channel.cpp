@@ -39,12 +39,6 @@ void Channel::HandleEvent() {
     }
 }
 
-void Channel::ETInit() {
-    if (events_ == kETEvent) return;
-    auto op = (events_ == kNoneEvent ? EPOLL_CTL_ADD : EPOLL_CTL_MOD);
-    events_ = kETEvent;
-    Update(op);
-}
 void Channel::ETEnableReading() {
     if (IsReading()) return;
     auto op = (events_ == kNoneEvent ? EPOLL_CTL_ADD : EPOLL_CTL_MOD);

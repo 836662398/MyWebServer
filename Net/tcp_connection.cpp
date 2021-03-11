@@ -104,9 +104,9 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
         size_t oldLen = output_buffer_.ReadableBytes();
         output_buffer_.Append(static_cast<const char *>(data) + nwritten,
                               remaining);
-        //        if (!channel_.IsWriting()) {
-        //            channel_.EnableWriting();
-        //        }
+        if (!channel_.IsWriting()) {
+            channel_.EnableWriting();
+        }
     }
 }
 
@@ -120,6 +120,7 @@ void TcpConnection::CloseInLoop() {
     loop_->AssertInLoopThread();
     if (state_ == kConnected || state_ == kDisconnecting) {
         state_ = kDisconnecting;
+        DEBUG(fmt::format("[{}] Close()", name_));
         HandleClose();
     }
 }
@@ -131,7 +132,7 @@ void TcpConnection::ConnEstablished() {
     assert(state_ == kConnecting);
     state_ = kConnected;
     socket_.setTcpNoDelay(true);
-    channel_.ETInit();
+    channel_.ETEnableReading();
     connection_callback_(shared_from_this());
 }
 
@@ -152,6 +153,7 @@ void TcpConnection::HandleRead() {
     while ((n = input_buffer_.ReadFd(channel_.fd(), &saved_errno)) > 0)
         message_callback_(shared_from_this(), &input_buffer_);
     if (n == 0) {
+        INFO(fmt::format("[{}] read return 0.", name_));
         HandleClose();
     } else {
         if (saved_errno == EWOULDBLOCK) return;
@@ -163,7 +165,10 @@ void TcpConnection::HandleRead() {
 
 void TcpConnection::HandleWrite() {
     loop_->AssertInLoopThread();
-    if (output_buffer_.ReadableBytes() == 0) return;
+    if (output_buffer_.ReadableBytes() == 0) {
+        DEBUG("No need to write, but was awaken by epoll wait.");
+        return;
+    }
     if (channel_.IsWriting()) {
         ssize_t n;
         while ((n = ::write(channel_.fd(), output_buffer_.ReadData(),
