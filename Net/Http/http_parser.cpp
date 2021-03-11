@@ -22,7 +22,7 @@ bool HttpParser::ParseRequestLine(const char* begin, const char* end) {
                 request_.set_path(start, space);
             }
             start = space + 1;
-            // only accept http1.1
+            // only Accept http1.1
             succeed = (end - start == 8 && std::equal(start, end, "HTTP/1.1"));
         }
     }

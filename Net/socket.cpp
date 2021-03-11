@@ -35,7 +35,7 @@ void Socket::Listen() {
     }
 }
 
-int Socket::accept(SockAddress* peeraddr) {
+int Socket::Accept(SockAddress* peeraddr) {
     struct sockaddr_in6 addr;
     int connfd = accept(sockfd_, &addr);
     if (connfd >= 0) {
@@ -44,9 +44,9 @@ int Socket::accept(SockAddress* peeraddr) {
     return connfd;
 }
 
-void Socket::shutdownWrite() {
+void Socket::ShutdownWrite() {
     if (shutdown(sockfd_, SHUT_WR) < 0) {
-        ERROR_P("Socket failed to shutdownWrite.");
+        ERROR_P("Socket failed to ShutdownWrite.");
     }
 }
 
@@ -161,7 +161,7 @@ int Socket::accept(int sockfd, struct sockaddr_in6* addr) {
                            SOCK_NONBLOCK | SOCK_CLOEXEC);
     if (connfd < 0) {
         int savedErrno = errno;
-//        ERROR_P("Socket failed to accept");
+//        ERROR_P("Socket failed to Accept");
         switch (savedErrno) {
             case EAGAIN:
             case ECONNABORTED:
@@ -173,7 +173,7 @@ int Socket::accept(int sockfd, struct sockaddr_in6* addr) {
                 break;
 
             default:
-                ERROR("accept()");
+                ERROR("Accept()");
                 break;
         }
     }

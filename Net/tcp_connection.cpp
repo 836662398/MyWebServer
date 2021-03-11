@@ -111,16 +111,33 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
 }
 
 void TcpConnection::Close() {
-    if (state_ == kConnected || state_ == kDisconnecting) {
-        loop_->QueueInLoop(
+    if (state_ == kConnected) {
+        state_ = kDisconnecting;
+        loop_->RunInLoop(
             std::bind(&TcpConnection::CloseInLoop, shared_from_this()));
     }
 }
+
 void TcpConnection::CloseInLoop() {
+    loop_->AssertInLoopThread();
+    if (!channel_.IsWriting()) {
+        if (state_ == kDisconnecting)
+            HandleClose();
+    }
+    // otherwise shutdown when write is completed.
+}
+
+void TcpConnection::ForceClose() {
+    if (state_ == kConnected || state_ == kDisconnecting) {
+        loop_->QueueInLoop(
+            std::bind(&TcpConnection::ForceCloseInLoop, shared_from_this()));
+    }
+}
+void TcpConnection::ForceCloseInLoop() {
     loop_->AssertInLoopThread();
     if (state_ == kConnected || state_ == kDisconnecting) {
         state_ = kDisconnecting;
-        DEBUG(fmt::format("[{}] Close()", name_));
+        DEBUG(fmt::format("[{}] ForceClose()", name_));
         HandleClose();
     }
 }
@@ -175,10 +192,14 @@ void TcpConnection::HandleWrite() {
                             output_buffer_.ReadableBytes())) > 0) {
             output_buffer_.Skip(n);
             if (output_buffer_.ReadableBytes() == 0) {
-                //                channel_.DisableWriting();
+                channel_.DisableWriting();
                 if (write_complete_callback_) {
                     loop_->QueueInLoop(std::bind(write_complete_callback_,
                                                  shared_from_this()));
+                }
+                // Close() has been called
+                if (state_ == kDisconnecting) {
+                    CloseInLoop();
                 }
                 break;
             }
@@ -207,7 +228,7 @@ void TcpConnection::HandleClose() {
 
 void TcpConnection::HandleError() {
     int err = Socket::getSocketError(channel_.fd());
-    ERROR_P(
+    ERROR(
         fmt::format("[{}] HandleError(). error - {}", name_, strerror_tl(err)));
 }
 
@@ -237,3 +258,4 @@ void TcpConnection::DefaultMessageCallback(const TcpConnectionPtr &conn,
     buffer->Reset();
     INFO("No MessageCallback was set!");
 }
+

@@ -41,8 +41,8 @@ void Acceptor::HandleRead() {
     loop_->AssertInLoopThread();
     SockAddress peer_addr;
     int connfd = 0;
-    // accept in while is suitable for short connection
-    while ((connfd = accept_socket_.accept(&peer_addr)) >= 0) {
+    // Accept in while is suitable for short connection
+    while ((connfd = accept_socket_.Accept(&peer_addr)) >= 0) {
         if (new_connection_callback_) {
             new_connection_callback_(connfd, peer_addr);
         } else {
@@ -51,7 +51,7 @@ void Acceptor::HandleRead() {
         }
     }
     if(connfd < 0 && errno != EWOULDBLOCK){
-        ERROR_P("accept() failed!");
+        ERROR_P("Accept() failed!");
         if (errno == EMFILE) {
             ::close(idle_fd_);
             idle_fd_ = ::accept(accept_socket_.fd(), NULL, NULL);

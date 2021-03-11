@@ -28,7 +28,7 @@ inline To implicit_cast(From const& f) {
 }
 
 template <typename To, typename From>  // use like this: down_cast<T*>(foo);
-inline To down_cast(From* f)           // so we only accept pointers
+inline To down_cast(From* f)           // so we only Accept pointers
 {
 #ifndef NDEBUG
     assert(f == NULL || dynamic_cast<To>(f) != NULL);  // RTTI: debug mode only!

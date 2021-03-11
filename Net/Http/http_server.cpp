@@ -34,18 +34,19 @@ void HttpServer::StartListening() {
 }
 
 void HttpServer::OnConnection(const TcpConnectionPtr &conn) {
-    if (conn->Connected())
-        conn->set_something(HttpParser());
+    if (conn->Connected()) conn->set_something(HttpParser());
 }
 
 void HttpServer::OnMessage(const TcpConnectionPtr &conn, Buffer *buf) {
     auto parser = std::any_cast<HttpParser>(conn->p_something());
     if (!parser->ParseRequest(buf)) {
         conn->Send("HTTP/1.1 400 Bad Request\r\n\r\n");
+//        conn->Close();
     }
 
     if (parser->ParseComplete()) {
         OnRequest(conn, parser->request());
+        parser->Reset();
     }
 }
 
@@ -53,12 +54,15 @@ void HttpServer::OnRequest(const TcpConnectionPtr &conn,
                            const HttpRequest &req) {
     const std::string &connection = req.GetHeader("Connection");
     // set short connection
-    HttpResponse response(true);
+    HttpResponse response(false);
     response_callback_(req, &response);
     Buffer buf;
     // sent message generation by response
     response.AppendToBuffer(&buf);
     conn->Send(&buf);
+//    if (response.IsShortConnection()) {
+//        conn->Close();
+//    }
 }
 
 void HttpServer::AfterWriting(const TcpConnectionPtr &conn) {

@@ -34,8 +34,8 @@ class EchoServer {
         spdlog::info(fmt::format("[{}] recv {} bytes: {}", conn->name(), msg.size(), msg));
         if (msg == "exit") {
             conn->Send("bye");
-            conn->Close();
-            printf("Close()\n");
+            conn->ForceClose();
+            printf("ForceClose()\n");
         } else if (msg == "quit") {
             loop_->Quit();
         } else
