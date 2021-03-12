@@ -22,8 +22,18 @@ bool HttpParser::ParseRequestLine(const char* begin, const char* end) {
                 request_.set_path(start, space);
             }
             start = space + 1;
-            // only Accept http1.1
-            succeed = (end - start == 8 && std::equal(start, end, "HTTP/1.1"));
+
+            succeed =
+                (end - start == 8 && std::equal(start, end - 1, "HTTP/1."));
+            if (succeed) {
+                if (*(end - 1) == '1') {
+                    request_.set_version(HttpRequest::kHttp11);
+                } else if (*(end - 1) == '0') {
+                    request_.set_version(HttpRequest::kHttp10);
+                } else {
+                    succeed = false;
+                }
+            }
         }
     }
     return succeed;

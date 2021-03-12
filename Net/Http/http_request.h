@@ -11,8 +11,12 @@
 class HttpRequest {
    public:
     enum Method { kGet, kPost, kHead, kPut, kDelete, kInvalid };
+    enum Version { kHttp10, kHttp11, kUnknown };
 
-    HttpRequest() : method_(kInvalid) {}
+    HttpRequest() : method_(kInvalid), version_(kUnknown) {}
+
+    void set_version(Version v) { version_ = v; }
+    Version version() const { return version_; }
 
     bool set_method(const char* start, const char* end) {
         assert(method_ == kInvalid);
@@ -97,6 +101,7 @@ class HttpRequest {
 
    private:
     Method method_;
+    Version version_;
     std::string path_;
     std::string query_;
     std::unordered_map<std::string, std::string> headers_;
