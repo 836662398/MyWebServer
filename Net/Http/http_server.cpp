@@ -19,8 +19,8 @@ HttpServer::HttpServer(EventLoop *loop, const SockAddress &addr, int thread_num,
     : server_(loop, addr, thread_num, name, is_reuseport),
       response_callback_(DefaultResponseCallback) {
     using namespace std::placeholders;
-    server_.set_write_complete_callback(
-        std::bind(&HttpServer::AfterWriting, this, _1));
+//    server_.set_write_complete_callback(
+//        std::bind(&HttpServer::AfterWriting, this, _1));
     server_.set_connection_callback(
         std::bind(&HttpServer::OnConnection, this, _1));
     server_.set_message_callback(
@@ -41,7 +41,7 @@ void HttpServer::OnMessage(const TcpConnectionPtr &conn, Buffer *buf) {
     auto parser = std::any_cast<HttpParser>(conn->p_something());
     if (!parser->ParseRequest(buf)) {
         conn->Send("HTTP/1.1 400 Bad Request\r\n\r\n");
-//        conn->Close();
+        conn->Close();
     }
 
     if (parser->ParseComplete()) {
@@ -53,16 +53,16 @@ void HttpServer::OnMessage(const TcpConnectionPtr &conn, Buffer *buf) {
 void HttpServer::OnRequest(const TcpConnectionPtr &conn,
                            const HttpRequest &req) {
     const std::string &connection = req.GetHeader("Connection");
-    // set short connection
-    HttpResponse response(false);
+    bool is_short = (connection == "close");
+    HttpResponse response(is_short);
     response_callback_(req, &response);
     Buffer buf;
     // sent message generation by response
     response.AppendToBuffer(&buf);
     conn->Send(&buf);
-//    if (response.IsShortConnection()) {
-//        conn->Close();
-//    }
+    if (response.IsShortConnection()) {
+        conn->Close();
+    }
 }
 
 void HttpServer::AfterWriting(const TcpConnectionPtr &conn) {

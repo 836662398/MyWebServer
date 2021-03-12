@@ -124,7 +124,7 @@ void TcpConnection::CloseInLoop() {
         if (state_ == kDisconnecting)
             HandleClose();
     }
-    // otherwise shutdown when write is completed.
+    // otherwise close when write is completed.
 }
 
 void TcpConnection::ForceClose() {
