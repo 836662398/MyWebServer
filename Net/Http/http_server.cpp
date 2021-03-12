@@ -19,8 +19,8 @@ HttpServer::HttpServer(EventLoop *loop, const SockAddress &addr, int thread_num,
     : server_(loop, addr, thread_num, name, is_reuseport),
       response_callback_(DefaultResponseCallback) {
     using namespace std::placeholders;
-    server_.set_write_complete_callback(
-        std::bind(&HttpServer::AfterWriting, this, _1));
+//    server_.set_write_complete_callback(
+//        std::bind(&HttpServer::AfterWriting, this, _1));
     server_.set_connection_callback(
         std::bind(&HttpServer::OnConnection, this, _1));
     server_.set_message_callback(
@@ -42,10 +42,12 @@ void HttpServer::OnMessage(const TcpConnectionPtr &conn, Buffer *buf) {
     auto parser = std::any_cast<HttpParser>(conn->p_something());
     if (!parser->ParseRequest(buf)) {
         conn->Send("HTTP/1.1 400 Bad Request\r\n\r\n");
+        conn->Close();
     }
 
     if (parser->ParseComplete()) {
         OnRequest(conn, parser->request());
+        parser->Reset();
     }
 }
 
@@ -58,6 +60,9 @@ void HttpServer::OnRequest(const TcpConnectionPtr &conn,
     // sent message generation by response
     response.AppendToBuffer(&buf);
     conn->Send(&buf);
+    if (response.IsShortConnection()) {
+        conn->Close();
+    }
 }
 
 void HttpServer::AfterWriting(const TcpConnectionPtr &conn) {

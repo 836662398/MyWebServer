@@ -41,7 +41,6 @@ void Acceptor::HandleRead() {
     loop_->AssertInLoopThread();
     SockAddress peer_addr;
     int connfd = 0;
-    // accept in while is suitable for short connection
     if ((connfd = accept_socket_.accept(&peer_addr)) >= 0) {
         if (new_connection_callback_) {
             new_connection_callback_(connfd, peer_addr);

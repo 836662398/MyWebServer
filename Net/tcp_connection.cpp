@@ -109,12 +109,29 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
 }
 
 void TcpConnection::Close() {
-    if (state_ == kConnected || state_ == kDisconnecting) {
-        loop_->QueueInLoop(
+    if (state_ == kConnected) {
+        state_ = kDisconnecting;
+        loop_->RunInLoop(
             std::bind(&TcpConnection::CloseInLoop, shared_from_this()));
     }
 }
+
 void TcpConnection::CloseInLoop() {
+    loop_->AssertInLoopThread();
+    if (!channel_.IsWriting()) {
+        if (state_ == kDisconnecting)
+            HandleClose();
+    }
+    // otherwise close when write is completed.
+}
+
+void TcpConnection::ForceClose() {
+    if (state_ == kConnected || state_ == kDisconnecting) {
+        loop_->QueueInLoop(
+            std::bind(&TcpConnection::FroceCloseInLoop, shared_from_this()));
+    }
+}
+void TcpConnection::FroceCloseInLoop() {
     loop_->AssertInLoopThread();
     if (state_ == kConnected || state_ == kDisconnecting) {
         state_ = kDisconnecting;

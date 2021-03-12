@@ -34,7 +34,7 @@ TcpClient::~TcpClient() {
     }
     if (conn) {
         assert(loop_ == conn->loop());
-        conn->Close();
+        conn->ForceClose();
     } else {
         connector_->Stop();
     }
@@ -52,7 +52,7 @@ void TcpClient::Disconnect() {
     {
         std::lock_guard<std::mutex> lck(mutex_);
         if (connection_) {
-            connection_->Close();
+            connection_->ForceClose();
         }
     }
 }
