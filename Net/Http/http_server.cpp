@@ -19,8 +19,8 @@ HttpServer::HttpServer(EventLoop *loop, const SockAddress &addr, int thread_num,
     : server_(loop, addr, thread_num, name, is_reuseport),
       response_callback_(DefaultResponseCallback) {
     using namespace std::placeholders;
-//    server_.set_write_complete_callback(
-//        std::bind(&HttpServer::AfterWriting, this, _1));
+    //    server_.set_write_complete_callback(
+    //        std::bind(&HttpServer::AfterWriting, this, _1));
     server_.set_connection_callback(
         std::bind(&HttpServer::OnConnection, this, _1));
     server_.set_message_callback(
@@ -34,8 +34,7 @@ void HttpServer::StartListening() {
 }
 
 void HttpServer::OnConnection(const TcpConnectionPtr &conn) {
-    if (conn->Connected())
-        conn->set_something(HttpParser());
+    if (conn->Connected()) conn->set_something(HttpParser());
 }
 
 void HttpServer::OnMessage(const TcpConnectionPtr &conn, Buffer *buf) {
@@ -54,7 +53,8 @@ void HttpServer::OnMessage(const TcpConnectionPtr &conn, Buffer *buf) {
 void HttpServer::OnRequest(const TcpConnectionPtr &conn,
                            const HttpRequest &req) {
     const std::string &connection = req.GetHeader("Connection");
-    HttpResponse response(true);
+    bool is_short = (connection == "close");
+    HttpResponse response(is_short);
     response_callback_(req, &response);
     Buffer buf;
     // sent message generation by response

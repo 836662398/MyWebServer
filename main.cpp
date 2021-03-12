@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
                 break;
             }
             case 'b': {
-                spdlog::get("log")->set_level(spdlog::level::off);
+                spdlog::get("log")->set_level(spdlog::level::err);
                 std::cout<<"Benchmark starts."<<std::endl;
                 break;
             }

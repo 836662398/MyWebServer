@@ -61,7 +61,7 @@ class TcpConnection : noncopyable,
     // called when TcpServer or TcpClient accepts/Connect a new connection,
     // only once
     void ConnEstablished();
-    // called when TcpServer or TcpClient removes TcpConnection from its map,
+    // called when TcpServer or TcpClient removes TcpConnection from its unordered_unordered_map,
     // each TcpConnection will call once
     void ConnDestroy();
 
