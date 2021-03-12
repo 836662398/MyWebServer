@@ -36,6 +36,7 @@ TEST(HttpParser, test1) {
     auto request = parser.request();
     EXPECT_EQ(request.method(), HttpRequest::kGet);
     EXPECT_EQ(request.path(), string("/"));
+    EXPECT_EQ(request.version(), HttpRequest::kHttp11);
     EXPECT_EQ(request.GetHeader("Host"), string("www.baidu.com"));
     EXPECT_EQ(request.GetHeader("User-Agent"), string(""));
     EXPECT_EQ(request.GetHeader("Accept-Encoding"), string(""));
@@ -43,7 +44,7 @@ TEST(HttpParser, test1) {
 
 TEST(HttpParser, test2) {
     string all(
-        "GET / HTTP/1.1\r\n"
+        "GET / HTTP/1.0\r\n"
         "Host: www.baidu.com\r\n"
         "\r\n");
     int x = all.size();
@@ -61,6 +62,7 @@ TEST(HttpParser, test2) {
         const HttpRequest& request = parser.request();
         EXPECT_EQ(request.method(), HttpRequest::kGet);
         EXPECT_EQ(request.path(), string("/"));
+        EXPECT_EQ(request.version(), HttpRequest::kHttp10);
         EXPECT_EQ(request.GetHeader("Host"), string("www.baidu.com"));
         EXPECT_EQ(request.GetHeader("User-Agent"), string(""));
     }
