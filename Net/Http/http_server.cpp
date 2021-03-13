@@ -19,8 +19,6 @@ HttpServer::HttpServer(EventLoop *loop, const SockAddress &addr, int thread_num,
     : server_(loop, addr, thread_num, name, is_reuseport),
       response_callback_(DefaultResponseCallback) {
     using namespace std::placeholders;
-    //    server_.set_write_complete_callback(
-    //        std::bind(&HttpServer::AfterWriting, this, _1));
     server_.set_connection_callback(
         std::bind(&HttpServer::OnConnection, this, _1));
     server_.set_message_callback(
@@ -55,7 +53,7 @@ void HttpServer::OnRequest(const TcpConnectionPtr &conn,
     const std::string &connection = req.GetHeader("Connection");
     bool close =
         connection == "close" ||
-        (req.version() == HttpRequest::kHttp10 && connection != "Keep-Alive");
+        (req.version() == HttpRequest::kHttp10 && connection != "keep-alive");
     bool is_short = (close);
     HttpResponse response(is_short);
     response_callback_(req, &response);
@@ -68,9 +66,6 @@ void HttpServer::OnRequest(const TcpConnectionPtr &conn,
     }
 }
 
-void HttpServer::AfterWriting(const TcpConnectionPtr &conn) {
-    if (conn->Connected()) conn->Close();
-}
 
 void HttpServer::DefaultResponseCallback(const HttpRequest &,
                                          HttpResponse *resp) {

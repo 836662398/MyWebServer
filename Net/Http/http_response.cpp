@@ -18,7 +18,7 @@ void HttpResponse::AppendToBuffer(Buffer* output) const {
     if (is_short_conn_) {
         output->Append("Connection: close\r\n");
     } else {
-        output->Append("Connection: Keep-Alive\r\n");
+        output->Append("Connection: keep-alive\r\n");
     }
 
     for (const auto& header : headers_) {

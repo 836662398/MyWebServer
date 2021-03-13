@@ -36,7 +36,6 @@ class HttpServer : noncopyable {
     void OnConnection(const TcpConnectionPtr& conn);
     void OnMessage(const TcpConnectionPtr& conn, Buffer* buf);
     void OnRequest(const TcpConnectionPtr& conn, const HttpRequest& req);
-    void AfterWriting(const TcpConnectionPtr& conn);
 
     TcpServer server_;
     // Response generation by request
