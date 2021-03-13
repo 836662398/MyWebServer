@@ -41,8 +41,8 @@ void Epoller::UpdateChannel(Channel *channel, int operation) {
                       channel->EventsToString()));
     if (::epoll_ctl(epollfd_, operation, fd, &event) < 0) {
         ERROR_P(fmt::format("Failed to epoll_ctl, operation: {}, {}",
-                          OperationToString(operation),
-                          channel->EventsToString()));
+                            OperationToString(operation),
+                            channel->EventsToString()));
     }
 }
 
@@ -66,9 +66,7 @@ Timestamp Epoller::Epoll(int timeout_ms,
         if (events_num == events_.size()) {
             events_.resize(events_.size() * 2);
         }
-    } else if (events_num == 0)
-        TRACE("Nothing happened.");
-    else {
+    } else if (events_num < 0) {
         if (saved_errno != EINTR) {
             errno = saved_errno;
             ERROR_P("epoll_wait() failed!");
