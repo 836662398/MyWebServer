@@ -13,25 +13,56 @@ static std::string unit_name = "TcpConnection";
 
 TcpConnection::TcpConnection(EventLoop *loop, const std::string &name,
                              int sockfd, const SockAddress &local,
-                             const SockAddress &peer)
+                             const SockAddress &peer,
+                             double heartbeat_timeout_s)
     : loop_(loop),
       name_(name),
       state_(kConnecting),
       socket_(sockfd),
       channel_(loop, sockfd),
       local_addr_(local),
-      peer_addr_(peer) {
+      peer_addr_(peer),
+      heartbeat_timeout_s_(heartbeat_timeout_s) {
     assert(loop != nullptr);
     channel_.set_read_callback(std::bind(&TcpConnection::HandleRead, this));
     channel_.set_write_callback(std::bind(&TcpConnection::HandleWrite, this));
     channel_.set_close_callback(std::bind(&TcpConnection::HandleClose, this));
     channel_.set_error_callback(std::bind(&TcpConnection::HandleError, this));
+
     TRACE(fmt::format("ctor [{}], fd = {}", name_, sockfd));
 }
+
 TcpConnection::~TcpConnection() {
     TRACE(fmt::format("dtor [{}], fd = {}, state = {}", name_, channel_.fd(),
                       PrintState()));
     assert(state_ == kDisconnected);
+}
+
+// weak_from_this() whithin ctor will be empty,
+// so we should use Init() after ctor.
+// https://stackoverflow.com/questions/50557861/weak-from-this-within-constructor
+void TcpConnection::Init() {
+    heartbeat_callback_ = [ptr = weak_from_this()] {
+        if (std::shared_ptr<TcpConnection> sp = ptr.lock()) {
+            sp->Close();
+        }
+    };
+    if (heartbeat_timeout_s_ > 0) {
+        heartbeat_timer_ =
+            loop_->RunAfter(heartbeat_timeout_s_, heartbeat_callback_);
+    }
+}
+
+TcpConnectionPtr TcpConnection::CreateTcpConnPtr(EventLoop *loop,
+                                                 const std::string &name,
+                                                 int sockfd,
+                                                 const SockAddress &local,
+                                                 const SockAddress &peer,
+                                                 double heartbeat_timeout) {
+    auto sp = std::make_shared<TcpConnection>(loop, name, sockfd, local, peer,
+                                              heartbeat_timeout);
+    sp->Init();
+    return sp;
 }
 
 void TcpConnection::Send(const void *data, int len) {
@@ -113,6 +144,7 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
 void TcpConnection::Close() {
     if (state_ == kConnected) {
         state_ = kDisconnecting;
+        DEBUG(fmt::format("[{}] CLose()", name_));
         loop_->RunInLoop(
             std::bind(&TcpConnection::CloseInLoop, shared_from_this()));
     }
@@ -121,8 +153,7 @@ void TcpConnection::Close() {
 void TcpConnection::CloseInLoop() {
     loop_->AssertInLoopThread();
     if (!channel_.IsWriting()) {
-        if (state_ == kDisconnecting)
-            HandleClose();
+        if (state_ == kDisconnecting) HandleClose();
     }
     // otherwise close when write is completed.
 }
@@ -167,16 +198,25 @@ void TcpConnection::HandleRead() {
     loop_->AssertInLoopThread();
     int saved_errno = 0;
     ssize_t n;
+    // It's likely that ReadFd return 0 after message_callback has been called
+    // HandleClose() will be called twice !
     while ((n = input_buffer_.ReadFd(channel_.fd(), &saved_errno)) > 0)
         message_callback_(shared_from_this(), &input_buffer_);
     if (n == 0) {
         INFO(fmt::format("[{}] read return 0.", name_));
         HandleClose();
+        return;
     } else {
-        if (saved_errno == EWOULDBLOCK) return;
-        errno = saved_errno;
-        ERROR_P("ReadFd() failed!");
-        HandleError();
+        if (saved_errno != EWOULDBLOCK) {
+            errno = saved_errno;
+            ERROR_P("ReadFd() failed!");
+            HandleError();
+        }
+    }
+    if (heartbeat_timer_) {
+        loop_->Cancel(heartbeat_timer_);
+        heartbeat_timer_ =
+            loop_->RunAfter(heartbeat_timeout_s_, heartbeat_callback_);
     }
 }
 
@@ -215,8 +255,9 @@ void TcpConnection::HandleWrite() {
 
 void TcpConnection::HandleClose() {
     loop_->AssertInLoopThread();
-    DEBUG(fmt::format("[{}] disconnects.", name_));
-    assert(state_ == kConnected || state_ == kDisconnecting);
+    if (state_ == kDisconnected) return;
+    INFO(fmt::format("[{}] disconnects.", name_));
+    assert(state_ != kConnecting);
     // we don't close fd, leave it to Socket dtor
     state_ = kDisconnected;
     channel_.DisableAll();
@@ -224,6 +265,7 @@ void TcpConnection::HandleClose() {
     TcpConnectionPtr guard(shared_from_this());
     connection_callback_(guard);
     close_callback_(guard);
+    if (heartbeat_timer_) loop_->Cancel(heartbeat_timer_);
 }
 
 void TcpConnection::HandleError() {
@@ -258,4 +300,3 @@ void TcpConnection::DefaultMessageCallback(const TcpConnectionPtr &conn,
     buffer->Reset();
     INFO("No MessageCallback was set!");
 }
-

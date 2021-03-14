@@ -55,6 +55,7 @@ int main(int argc, char* argv[]) {
     EventLoop loop;
     HttpServer server(&loop, 8000, numThreads, "dummy");
     server.set_response_callback(OnRequest);
+    server.TurnOnHeartBeat(5);
     server.StartListening();
     loop.Loop();
 }

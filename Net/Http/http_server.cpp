@@ -25,6 +25,11 @@ HttpServer::HttpServer(EventLoop *loop, const SockAddress &addr, int thread_num,
         std::bind(&HttpServer::OnMessage, this, _1, _2));
 }
 
+void HttpServer::TurnOnHeartBeat(double seconds) {
+    server_.TurnOnHeartbeat(seconds);
+    INFO(fmt::format("[{}] turns on heartbeat detection, timeout {} s",server_.name(), seconds));
+}
+
 void HttpServer::StartListening() {
     server_.StartListening();
     INFO(fmt::format("[{}] starts listening to {}", server_.name(),
@@ -73,3 +78,4 @@ void HttpServer::DefaultResponseCallback(const HttpRequest &,
     resp->set_status_message("Not Found");
     resp->set_short_connection();
 }
+

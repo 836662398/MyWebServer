@@ -9,10 +9,10 @@
 #include <functional>
 #include <thread>
 
+#include "Net/Timer/timer_manager.h"
 #include "Net/callbacks.h"
 #include "Net/channel.h"
 #include "Net/epoller.h"
-#include "Net/Timer/timer_manager.h"
 #include "Utility/logging.h"
 
 class EventLoop {
@@ -34,8 +34,8 @@ class EventLoop {
 
     // wake up from epoll_wait
     void WakeUp();
-    void UpdateChannel(Channel *channel, int operation);
-    void RemoveChannel(Channel *channel);
+    void UpdateChannel(Channel* channel, int operation);
+    void RemoveChannel(Channel* channel);
     bool HasChannel(Channel* channel);
 
     // timers

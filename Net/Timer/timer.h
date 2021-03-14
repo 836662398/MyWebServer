@@ -10,6 +10,7 @@
 #include "Net/callbacks.h"
 #include "Utility/timestamp.h"
 
+// interior class
 class Timer {
    public:
     // interval is in seconds

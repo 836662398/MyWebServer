@@ -8,6 +8,7 @@
 #include <any>
 #include <memory>
 
+#include "Net/Timer/timer.h"
 #include "Net/buffer.h"
 #include "Net/callbacks.h"
 #include "Net/channel.h"
@@ -26,8 +27,15 @@ class TcpConnection : noncopyable,
                       public std::enable_shared_from_this<TcpConnection> {
    public:
     TcpConnection(EventLoop* loop, const std::string& name, int sockfd,
-                  const SockAddress& local, const SockAddress& peer);
+                  const SockAddress& local, const SockAddress& peer,
+                  double heartbeat_timeout = 0);
     ~TcpConnection();
+
+    void Init();
+    static TcpConnectionPtr CreateTcpConnPtr(EventLoop* loop, const std::string& name,
+                                      int sockfd, const SockAddress& local,
+                                      const SockAddress& peer,
+                                      double heartbeat_timeout = 0);
 
     EventLoop* loop() { return loop_; }
     const std::string& name() { return name_; }
@@ -42,8 +50,6 @@ class TcpConnection : noncopyable,
     // close util writing is finished
     void Close();
     void ForceClose();
-
-
 
     void setTcpNoDelay(bool on);
     void set_connection_callback(const ConnectionCallback& cb) {
@@ -67,17 +73,15 @@ class TcpConnection : noncopyable,
     // each TcpConnection will call once
     void ConnDestroy();
 
-    void set_something(const std::any& something)
-    { something_ = something; }
+    void set_something(const std::any& something) { something_ = something; }
 
-    const std::any& something() const
-    { return something_; }
+    const std::any& something() const { return something_; }
 
-    std::any* p_something()
-    { return &something_; }
+    std::any* p_something() { return &something_; }
 
     static void DefaultConnCallback(const TcpConnectionPtr& conn);
-    static void DefaultMessageCallback(const TcpConnectionPtr& conn, Buffer* buffer);
+    static void DefaultMessageCallback(const TcpConnectionPtr& conn,
+                                       Buffer* buffer);
 
    private:
     enum State {
@@ -112,6 +116,9 @@ class TcpConnection : noncopyable,
     CloseCallback close_callback_;
     Buffer input_buffer_;
     Buffer output_buffer_;
+    std::shared_ptr<Timer> heartbeat_timer_;
+    double heartbeat_timeout_s_;
+    std::function<void()> heartbeat_callback_;
     // something could be used
     std::any something_;
 };

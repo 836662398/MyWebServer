@@ -28,6 +28,7 @@ class HttpServer : noncopyable {
         response_callback_ = cb;
     }
 
+    void TurnOnHeartBeat(double seconds);
     void StartListening();
 
     static void DefaultResponseCallback(const HttpRequest&, HttpResponse* resp);

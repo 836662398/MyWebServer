@@ -44,6 +44,9 @@ class TcpServer : noncopyable {
         write_complete_callback_ = cb;
     }
 
+    void TurnOnHeartbeat(double seconds) { heartbeat_timeout_s_ = seconds; }
+    double heartbeat_timeout_s() { return heartbeat_timeout_s_; }
+
     void StartListening();
 
    private:
@@ -63,6 +66,7 @@ class TcpServer : noncopyable {
     ConnectionCallback connection_callback_;
     MessageCallback message_callback_;
     WriteCompleteCallback write_complete_callback_;
+    double heartbeat_timeout_s_ = 0;
 
     std::atomic<bool> started_;
     int next_conn_id_;

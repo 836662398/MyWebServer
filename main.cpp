@@ -7,14 +7,14 @@
 bool benchmark = false;
 
 void OnRequest(const HttpRequest& req, HttpResponse* resp) {
-//    if (!benchmark) {
-//        std::cout << "Headers " << req.PrintMethod() << " " << req.path()
-//                  << std::endl;
-//        auto headers = req.headers();
-//        for (const auto& header : headers) {
-//            std::cout << header.first << ": " << header.second << std::endl;
-//        }
-//    }
+    if (!benchmark) {
+        std::cout << "Headers " << req.PrintMethod() << " " << req.path()
+                  << std::endl;
+        auto headers = req.headers();
+        for (const auto& header : headers) {
+            std::cout << header.first << ": " << header.second << std::endl;
+        }
+    }
 
     if (req.path() == "/") {
         resp->set_status_code(HttpResponse::k200Ok);
@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
                 break;
             }
             case 'b': {
+                benchmark = true;
                 spdlog::get("log")->set_level(spdlog::level::err);
                 std::cout<<"Benchmark starts."<<std::endl;
                 break;
@@ -54,9 +55,12 @@ int main(int argc, char** argv) {
         }
     }
     EventLoop loop;
-    HttpServer server(&loop, 80, num_thread, "WebServer");
+    HttpServer server(&loop, 8000, num_thread, "WebServer");
     server.set_response_callback(OnRequest);
+
+    server.TurnOnHeartBeat(8);
     server.StartListening();
+
     std::cout << "Server starts" << std::endl;
     loop.Loop();
     return 0;

@@ -62,14 +62,20 @@ void TcpServer::HandleNewConn(int sockfd, const SockAddress &peer_addr) {
                      peer_addr.IpPort()));
 
     SockAddress local_addr = SockAddress::CreateSockAddressByFd(sockfd);
-    TcpConnectionPtr conn(std::make_shared<TcpConnection>(
-        io_loop, conn_name, sockfd, local_addr, peer_addr));
+    //    TcpConnectionPtr conn(
+    //        std::make_shared<TcpConnection>(io_loop, conn_name, sockfd,
+    //        local_addr,
+    //                                        peer_addr, heartbeat_timeout_s_));
+    //    conn->Init();
+    auto conn =
+        TcpConnection::CreateTcpConnPtr(io_loop, conn_name, sockfd, local_addr,
+                                        peer_addr, heartbeat_timeout_s_);
     connections_[conn_name] = conn;
     conn->set_connection_callback(connection_callback_);
     conn->set_message_callback(message_callback_);
     conn->set_write_complete_callback(write_complete_callback_);
-    conn->set_close_callback(std::bind(
-        &TcpServer::RemoveConn, this, std::placeholders::_1));
+    conn->set_close_callback(
+        std::bind(&TcpServer::RemoveConn, this, std::placeholders::_1));
     io_loop->RunInLoop(std::bind(&TcpConnection::ConnEstablished, conn));
 }
 

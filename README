@@ -1,0 +1,59 @@
+# MyWebServer
+
+## Introduction
+
+基于muduo网络库的C++ 高性能简易静态web服务器。
+
+对muduo进行了一些优化：
+
+1. 添加了心跳检测；
+
+2. 尽量使用C++标准库，减少了代码量；
+
+3. 简化了定时器实现，使用堆而不是基于红黑树的set；
+
+4. 实现 epoll ET/LT两种模式（位于不同branch）。
+
+   ......
+
+日志模块使用了spdlog库，单元测试使用了gtest库。
+
+## Envoirment
+
+- OS：Ubuntu18.04
+- Complier: g++ 7.5.0
+- Memory：8G
+
+## Build
+
+```
+./build.sh	#默认生成debug版本
+```
+
+如果想要运行单元测试，需要前置安装gtest:
+
+```
+git clone https://github.com/google/googletest.git 
+cd googletest        
+mkdir build          
+cd build
+cmake ..             
+make
+sudo make install    # Install in /usr/local/ by default
+```
+
+## Usage
+
+```
+./MyWebServer [-t thread_numbers] [-b]
+```
+
+-b：benchmark模式，只打印 ERROR/FATAL 级别日志。
+
+-t：开启线程数量，默认5线程。
+
+## Technical points
+
+-  Reactor模式，使用 非阻塞IO + IO复用，分别使用了LT/ET两种epoll模式。
+
+  
