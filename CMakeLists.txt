@@ -3,7 +3,7 @@ project(MyWebServer)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(spdlog REQUIRED)
+#find_package(spdlog REQUIRED)
 find_package(Threads REQUIRED)
 
 

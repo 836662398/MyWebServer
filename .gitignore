@@ -9,3 +9,4 @@
 !*.cpp
 !*.h
 !CMakeLists.txt
+!Utility/spdlog
