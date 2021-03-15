@@ -48,6 +48,7 @@ class TcpServer : noncopyable {
     double heartbeat_timeout_s() { return heartbeat_timeout_s_; }
 
     void StartListening();
+    void Stop();
 
    private:
     using ConnectionMap = std::unordered_map<std::string, TcpConnectionPtr>;
@@ -55,6 +56,8 @@ class TcpServer : noncopyable {
     void HandleNewConn(int sockfd, const SockAddress& peer_addr);
     void RemoveConn(const TcpConnectionPtr& conn);
     void RemoveConnInLoop(const TcpConnectionPtr& conn);
+
+    void StopInLoop();
 
     EventLoop* loop_;  // the loop of acceptor
     const SockAddress listen_addr_;
@@ -71,6 +74,8 @@ class TcpServer : noncopyable {
     std::atomic<bool> started_;
     int next_conn_id_;
     ConnectionMap connections_;
+    // num of sub IO thread
+    int thread_num_;
 };
 
 #endif  // MYWEBSERVER_TCP_SERVER_H

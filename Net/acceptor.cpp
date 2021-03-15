@@ -26,6 +26,7 @@ Acceptor::Acceptor(EventLoop *loop, const SockAddress &listenaddr,
     accept_channel_.set_read_callback(std::bind(&Acceptor::HandleRead, this));
 }
 Acceptor::~Acceptor() {
+    TRACE("dtor");
     // accept_channel_.DisableAll(); //can be omitted
     accept_channel_.Remove();
 }

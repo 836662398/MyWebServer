@@ -37,7 +37,8 @@ void Epoller::UpdateChannel(Channel *channel, int operation) {
         assert(fd2channel_.find(fd) != fd2channel_.end());
         fd2channel_.erase(fd);
     }
-    TRACE(fmt::format("Operation: {}, {}", OperationToString(operation),
+    if(operation != EPOLL_CTL_DEL)
+        TRACE(fmt::format("Operation: {}, {}", OperationToString(operation),
                       channel->EventsToString()));
     if (::epoll_ctl(epollfd_, operation, fd, &event) < 0) {
         ERROR_P(fmt::format("Failed to epoll_ctl, operation: {}, {}",

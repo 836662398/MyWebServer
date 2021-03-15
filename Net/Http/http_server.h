@@ -30,6 +30,7 @@ class HttpServer : noncopyable {
 
     void TurnOnHeartBeat(double seconds);
     void StartListening();
+    void Stop();
 
     static void DefaultResponseCallback(const HttpRequest&, HttpResponse* resp);
 

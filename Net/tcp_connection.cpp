@@ -29,7 +29,8 @@ TcpConnection::TcpConnection(EventLoop *loop, const std::string &name,
     channel_.set_close_callback(std::bind(&TcpConnection::HandleClose, this));
     channel_.set_error_callback(std::bind(&TcpConnection::HandleError, this));
 
-    TRACE(fmt::format("ctor [{}], fd = {}", name_, sockfd));
+    TRACE(fmt::format("ctor [{}], fd = {}, loop sequence {}", name_, sockfd,
+                      loop_->sequence()));
 }
 
 TcpConnection::~TcpConnection() {
@@ -44,6 +45,7 @@ TcpConnection::~TcpConnection() {
 void TcpConnection::Init() {
     heartbeat_callback_ = [ptr = weak_from_this()] {
         if (std::shared_ptr<TcpConnection> sp = ptr.lock()) {
+            DEBUG("timer timeout");
             sp->Close();
         }
     };
@@ -144,7 +146,7 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
 void TcpConnection::Close() {
     if (state_ == kConnected) {
         state_ = kDisconnecting;
-        DEBUG(fmt::format("[{}] CLose()", name_));
+        DEBUG(fmt::format("[{}] Close()", name_));
         loop_->RunInLoop(
             std::bind(&TcpConnection::CloseInLoop, shared_from_this()));
     }
@@ -182,15 +184,21 @@ void TcpConnection::ConnEstablished() {
     socket_.setTcpNoDelay(true);
     channel_.ETEnableReading();
     connection_callback_(shared_from_this());
+    TRACE("ConnEstablished()");
 }
 
 void TcpConnection::ConnDestroy() {
     loop_->AssertInLoopThread();
+    if (heartbeat_timer_) {
+        loop_->Cancel(heartbeat_timer_);
+        heartbeat_timer_ = nullptr;
+    }
     if (state_ == kConnected) {
         state_ = kDisconnected;
-        //        channel_.DisableAll();  // can be omitted
+        channel_.DisableAll();  // can be omitted
         connection_callback_(shared_from_this());
     }
+    TRACE(fmt::format("[{}]ConnDestroy()", name_));
     channel_.Remove();
 }
 
@@ -255,6 +263,10 @@ void TcpConnection::HandleWrite() {
 
 void TcpConnection::HandleClose() {
     loop_->AssertInLoopThread();
+    if (heartbeat_timer_) {
+        loop_->Cancel(heartbeat_timer_);
+        heartbeat_timer_ = nullptr;
+    }
     if (state_ == kDisconnected) return;
     INFO(fmt::format("[{}] disconnects.", name_));
     assert(state_ != kConnecting);
@@ -264,8 +276,10 @@ void TcpConnection::HandleClose() {
 
     TcpConnectionPtr guard(shared_from_this());
     connection_callback_(guard);
+    // close_callback_() couble be
+    // TcpServer::RemoveConn() or
+    // TcpClient::RemoveConn()
     close_callback_(guard);
-    if (heartbeat_timer_) loop_->Cancel(heartbeat_timer_);
 }
 
 void TcpConnection::HandleError() {

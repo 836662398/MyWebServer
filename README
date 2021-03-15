@@ -2,7 +2,7 @@
 
 ## Introduction
 
-基于muduo网络库的C++ 高性能简易静态web服务器。
+基于muduo网络库的C++ 高性能简单静态web服务器。
 
 对muduo进行了一些优化：
 
@@ -12,11 +12,11 @@
 
 3. 简化了定时器实现，使用堆而不是基于红黑树的set；
 
-4. 实现 epoll ET/LT两种模式（位于不同branch）。
+4. 分别实现 epoll ET/LT两种模式（位于不同branch）；
 
    ......
 
-日志模块使用了spdlog库，单元测试使用了gtest库。
+此外，日志模块使用了spdlog库，单元测试使用了gtest库。
 
 ## Envoirment
 
@@ -30,17 +30,9 @@
 ./build.sh	#默认生成debug版本
 ```
 
-如果想要运行单元测试，需要前置安装gtest:
+如果想要运行单元测试，需要先安装gtest：https://github.com/google/googletest/blob/master/googletest/README.md
 
-```
-git clone https://github.com/google/googletest.git 
-cd googletest        
-mkdir build          
-cd build
-cmake ..             
-make
-sudo make install    # Install in /usr/local/ by default
-```
+如果未安装spdlog库，则使用header-only形式，会导致编译较慢。安装spdlog静态库，可以大大加快编译速度。
 
 ## Usage
 
@@ -50,10 +42,29 @@ sudo make install    # Install in /usr/local/ by default
 
 -b：benchmark模式，只打印 ERROR/FATAL 级别日志。
 
--t：开启线程数量，默认5线程。
+-t：开启线程数量，包括主线程，默认5线程。
 
 ## Technical points
 
--  Reactor模式，使用 非阻塞IO + IO复用，分别使用了LT/ET两种epoll模式。
+-  Muti-reactor模式，使用 非阻塞IO + IO复用，分别实现了epoll LT/ET两种模式的网络库。
+-  使用了多线程，每个线程一个reactor，主线程仅负责accept连接，将建立的新连接分发给其他线程，使用 Round Robin 算法进行调度。
+-  一个线程负责多个连接，每个连接仅被一个线程负责。
+-  一个连接上的操作如果位于其他线程，可以通过函数调用的形式排队放进负责该连接的IO线程，以此在不用锁的情况下保证线程安全性 。
+-  添加了心跳检测功能，使用基于小根堆和 timerfd 的定时器关闭超时请求。
+-   使用 eventfd 实现了线程的异步唤醒 。
+-  使用智能指针等RAII技术，尽量避免使用 new/delete，防止内存泄漏。
+-  使用自动状态机解析HTTP请求。
 
-  
+##  Concurrency Model
+
+ ![img](https://img-blog.csdnimg.cn/img_convert/78e355f953ecd66c951398df7352cde7.png) 
+
+特点是one loop per thread，Base IO Thread负责accept(2)新连接，然后把新连接挂在某个sub IO Thread中（采用round-robin 轮询调度的方式来选择sub Reactor）。 线程数固定，IO Threads在进程初始化时创建。
+
+
+## Performance Comparison
+
+| 服务器 | MyWebServer_ET | MyWebServer_LT | muduo |
+| ------ | -------------- | -------------- | ----- |
+| QPS    | 64370          | 60134          | 60498 |
+

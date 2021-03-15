@@ -11,16 +11,16 @@
 #include <thread>
 
 #include "Net/event_loop.h"
-
 #include "Utility/noncopyable.h"
 
 // the thread for EventLoop to loop
-class EventLoopThread : noncopyable{
+class EventLoopThread : noncopyable {
    public:
     EventLoopThread();
     ~EventLoopThread();
 
     EventLoop* StartLoop();
+    EventLoop* loop() { return loop_; }
 
    private:
     void LoopFunc();
@@ -29,7 +29,6 @@ class EventLoopThread : noncopyable{
     std::thread thread_;
     std::mutex mutex_;
     std::condition_variable cv_;
-
 };
 
 #endif  // MYWEBSERVER_EVENT_LOOP_THREAD_H

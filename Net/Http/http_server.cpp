@@ -36,6 +36,11 @@ void HttpServer::StartListening() {
                      server_.ip_port()));
 }
 
+void HttpServer::Stop() {
+    INFO(fmt::format("[{}] Stop()", server_.name()));
+    server_.Stop();
+}
+
 void HttpServer::OnConnection(const TcpConnectionPtr &conn) {
     if (conn->Connected()) conn->set_something(HttpParser());
 }

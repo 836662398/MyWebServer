@@ -16,9 +16,7 @@ Channel::Channel(EventLoop *loop, int fd)
     : loop_(loop), fd_(fd), events_(0), revents_(0) {}
 
 Channel::~Channel() {
-    if (loop_->IsInLoopThread()) {
-        assert(!loop_->HasChannel(this));
-    }
+    TRACE("dtor");
 }
 
 void Channel::HandleEvent() {

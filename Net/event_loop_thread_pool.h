@@ -15,6 +15,7 @@ class EventLoopThreadPool : noncopyable {
     ~EventLoopThreadPool();
 
     void Start();
+    void Stop();
 
     EventLoop* GetNextLoop();
 

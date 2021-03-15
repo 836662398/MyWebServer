@@ -54,6 +54,8 @@ class EventLoop {
     void AssertInLoopThread();
     static EventLoop* get_thread_local_eventloop();
 
+    int sequence() const { return sequence_; }
+
    private:
     static const int kEpollTimeoutMs = 10000;
 
@@ -73,7 +75,6 @@ class EventLoop {
     std::mutex mutex_;
     std::vector<Callback> pending_callbacks_;
     int sequence_;
-
     static std::atomic<int> sequence_generator_;
 };
 

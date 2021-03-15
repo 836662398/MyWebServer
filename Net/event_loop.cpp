@@ -29,6 +29,7 @@ std::atomic<int> EventLoop::sequence_generator_ = 0;
 
 EventLoop::EventLoop()
     : looping_(false),
+      pending_callbacks_handling_(false),
       thread_id_(std::this_thread::get_id()),
       quit_flag_(false),
       epoller_(std::make_unique<Epoller>(this)),
@@ -40,7 +41,7 @@ EventLoop::EventLoop()
         thread_local_eventloop = this;
     else
         FATAL_P(fmt::format("Another EventLoop {} has existed in this thread.",
-                          thread_local_eventloop->sequence_));
+                            thread_local_eventloop->sequence_));
     DEBUG(fmt::format("EventLoop {} created ", sequence_));
     wakeup_channel_ = std::make_unique<Channel>(this, wakeup_fd_);
     wakeup_channel_->set_read_callback([this] { WakeUpReadHandle(); });
@@ -48,10 +49,11 @@ EventLoop::EventLoop()
 }
 
 EventLoop::~EventLoop() {
-    // wakeup_channel_->DisableAll();
+    wakeup_channel_->DisableAll();
     wakeup_channel_->Remove();
     ::close(wakeup_fd_);
     thread_local_eventloop = nullptr;
+    TRACE(fmt::format("[{}] dtor", sequence_));
 }
 
 void EventLoop::Loop() {
@@ -78,7 +80,6 @@ void EventLoop::Quit() {
     if (!IsInLoopThread()) {
         WakeUp();
     }
-    DEBUG(fmt::format("loop {} Quit()", sequence_));
     // Otherwise next cycle starts a little while
 }
 
@@ -164,7 +165,8 @@ void EventLoop::WakeUpReadHandle() {
     uint64_t buf;
     ssize_t n = ::read(wakeup_fd_, &buf, sizeof buf);
     if (n != 8)
-        ERROR_P(fmt::format("WakeUpReadHandle() read {} bytes instead of 8!", n));
+        ERROR_P(
+            fmt::format("WakeUpReadHandle() read {} bytes instead of 8!", n));
 }
 
 void EventLoop::HandlePendingCallbacks() {
