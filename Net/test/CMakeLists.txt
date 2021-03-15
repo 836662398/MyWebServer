@@ -1,5 +1,6 @@
-find_package(GTest REQUIRED)
+find_package(GTest)
 
+if(GTest_FOUND)
 set(GTEST_LIB GTest::GTest GTest::Main)
 
 add_executable(sock_addr_test gtest_main.cc sock_addr_test.cpp)
@@ -34,3 +35,4 @@ target_link_libraries(http_parser_test ${GTEST_LIB} lib_net)
 
 add_executable(http_server_test http_server_test.cpp)
 target_link_libraries(http_server_test lib_net)
+endif()

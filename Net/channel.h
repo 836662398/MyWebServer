@@ -13,6 +13,7 @@
 
 class EventLoop;
 
+// be responsible for event management upon sockfd
 class Channel : noncopyable {
    public:
     using EventCallback = std::function<void()>;

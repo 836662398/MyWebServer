@@ -78,6 +78,7 @@ void EventLoop::Quit() {
     if (!IsInLoopThread()) {
         WakeUp();
     }
+    DEBUG(fmt::format("loop {} Quit()", sequence_));
     // Otherwise next cycle starts a little while
 }
 
