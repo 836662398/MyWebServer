@@ -23,6 +23,7 @@
 - OS：Ubuntu18.04
 - Complier: g++ 7.5.0
 - Memory：8G
+- CPU：i5 10400
 - Thread Number：12
 
 ## Build
