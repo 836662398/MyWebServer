@@ -26,9 +26,9 @@ class Socket : noncopyable {
     void Listen();
     // the accepted socketfd is returned and *peeraddr is assigned
     // if it succeeds. Otherwise, -1 is returned.
-    int accept(SockAddress* peeraddr);
+    int Accept(SockAddress* peeraddr);
 
-    void shutdownWrite();
+    void ShutdownWrite();
 
     // Enable/disable TCP_NODELAY (disable/enable Nagle's algorithm).
     void setTcpNoDelay(bool on);
@@ -51,7 +51,7 @@ class Socket : noncopyable {
     static struct sockaddr_in6 getLocalAddr(int sockfd);
     static struct sockaddr_in6 getPeerAddr(int sockfd);
     static bool IsSelfConnect(int sockfd);
-
+    static void ShutdownWrite(int sockfd);
 
    private:
     int accept(int sockfd, struct sockaddr_in6* addr);

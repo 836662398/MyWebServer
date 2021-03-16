@@ -39,9 +39,11 @@ class TcpConnection : noncopyable,
     void Send(std::string_view data);
     void Send(Buffer* buf);
 
+
     // close util writing is finished
     void Close();
     void ForceClose();
+    void Shutdown();
 
     void setTcpNoDelay(bool on);
     void set_connection_callback(const ConnectionCallback& cb) {
@@ -92,6 +94,7 @@ class TcpConnection : noncopyable,
     void HandleError();
     void SendInLoop(std::string_view data);
     void SendInLoop(const void* data, size_t len);
+    void ShutdownInLoop();
     void CloseInLoop();
     void FroceCloseInLoop();
     const char* PrintState();

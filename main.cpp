@@ -33,7 +33,7 @@ void OnRequest(const HttpRequest& req, HttpResponse* resp) {
 }
 
 int main(int argc, char** argv) {
-    int process_num = 2;
+    int process_num = 1;
     int sub_thread_num = 4;
     int heartbeat_s = 0;  // parse args
     int opt;

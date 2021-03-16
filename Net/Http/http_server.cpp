@@ -62,7 +62,7 @@ void HttpServer::OnRequest(const TcpConnectionPtr &conn,
     response.AppendToBuffer(&buf);
     conn->Send(&buf);
     if (response.IsShortConnection()) {
-        conn->Close();
+        conn->Shutdown();
     }
 }
 

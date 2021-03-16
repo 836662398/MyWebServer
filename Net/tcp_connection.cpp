@@ -119,8 +119,7 @@ void TcpConnection::Close() {
 void TcpConnection::CloseInLoop() {
     loop_->AssertInLoopThread();
     if (!channel_.IsWriting()) {
-        if (state_ == kDisconnecting)
-            HandleClose();
+        if (state_ == kDisconnecting) HandleClose();
     }
     // otherwise close when write is completed.
 }
@@ -136,6 +135,21 @@ void TcpConnection::FroceCloseInLoop() {
     if (state_ == kConnected || state_ == kDisconnecting) {
         state_ = kDisconnecting;
         HandleClose();
+    }
+}
+
+void TcpConnection::Shutdown() {
+    if (state_ == kConnected) {
+        state_ = kDisconnecting;
+        loop_->RunInLoop(std::bind(&TcpConnection::ShutdownInLoop, this));
+    }
+}
+void TcpConnection::ShutdownInLoop() {
+    loop_->AssertInLoopThread();
+    if (!channel_.IsWriting()) {
+        // we are not writing
+        socket_.ShutdownWrite();
+        //    handleClose();
     }
 }
 
@@ -187,6 +201,10 @@ void TcpConnection::HandleWrite() {
                 if (write_complete_callback_) {
                     loop_->QueueInLoop(std::bind(write_complete_callback_,
                                                  shared_from_this()));
+                }
+                if (state_ == kDisconnecting) {
+                    ShutdownInLoop();
+                    // or CLoseInLoop();
                 }
             }
         } else {
@@ -241,4 +259,3 @@ void TcpConnection::DefaultMessageCallback(const TcpConnectionPtr &conn,
     buffer->Reset();
     INFO("No MessageCallback was set!");
 }
-
