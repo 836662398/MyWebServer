@@ -76,3 +76,5 @@
 | 双进程 | 97 054         | 97 247         |        |
 
 单进程开启 5 个 Sub IO Thread，双进程每个进程开启3个 Sub IO Thread。
+
+[详细记录](https://github.com/836662398/MyWebServer/blob/ET/TestRecord.md)
