@@ -23,6 +23,7 @@
 - OS：Ubuntu18.04
 - Complier: g++ 7.5.0
 - Memory：8G
+- Thread Number：12
 
 ## Build
 
@@ -37,12 +38,16 @@
 ## Usage
 
 ```
-./MyWebServer [-t thread_numbers] [-b]
+./MyWebServer [-s thread_numbers] [-b] [-p process_numbers] [-h heartbeat_seconds]
 ```
 
 -b：benchmark模式，只打印 ERROR/FATAL 级别日志。
 
--t：开启线程数量，包括主线程，默认5线程。
+-s：开启sub线程数量，不包括主线程，默认数量 4。
+
+-p：开启进程数，大于1时，fork()多个进程监听端口，负载均衡。其中每一个进程都有 thread_numbers 个sub线程。
+
+-h：开启心跳检测，超时时间为 heartbeat_seconds 。
 
 ## Technical points
 
@@ -61,10 +66,14 @@
 
 特点是one loop per thread，Base IO Thread负责accept(2)新连接，然后把新连接挂在某个sub IO Thread中（采用round-robin 轮询调度的方式来选择sub Reactor）。 线程数固定，IO Threads在进程初始化时创建。
 
+此外，允许fork()多个进程。多个进程共同监听端口，负载均衡。
+
 
 ## Performance Comparison
 
-| 服务器 | MyWebServer_ET | MyWebServer_LT | muduo |
-| ------ | -------------- | -------------- | ----- |
-| QPS    | 64370          | 60134          | 60498 |
+| QPS    | MyWebServer_ET | MyWebServer_LT | muduo  |
+| ------ | -------------- | -------------- | ------ |
+| 单进程 | 92 031         | 92 055         | 91 193 |
+| 双进程 | 97 054         | 97 247         |        |
 
+单进程开启 5 个 Sub IO Thread，双进程每个进程开启3个 Sub IO Thread。
