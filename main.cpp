@@ -8,14 +8,15 @@
 bool benchmark = false;
 
 void OnRequest(const HttpRequest& req, HttpResponse* resp) {
-//    if (!benchmark) {
-//        std::cout << "Headers " << req.PrintMethod() << " " << req.path()
-//                  << std::endl;
-//        auto headers = req.headers();
-//        for (const auto& header : headers) {
-//            std::cout << header.first << ": " << header.second << std::endl;
-//        }
-//    }
+    //    if (!benchmark) {
+    //        std::cout << "Headers " << req.PrintMethod() << " " << req.path()
+    //                  << std::endl;
+    //        auto headers = req.headers();
+    //        for (const auto& header : headers) {
+    //            std::cout << header.first << ": " << header.second <<
+    //            std::endl;
+    //        }
+    //    }
 
     if (req.path() == "/") {
         resp->set_status_code(HttpResponse::k200Ok);
@@ -36,22 +37,26 @@ void OnRequest(const HttpRequest& req, HttpResponse* resp) {
 HttpServer* p_server;
 void sig_handler(int sig) {
     if (sig) {
-        printf("Server exit.");
+        printf("Server exit.\n");
         p_server->Stop();
         p_server = nullptr;
     }
 }
 
 int main(int argc, char** argv) {
-    int num_thread = 4;
-    // parse args
+    int process_num = 2;
+    int sub_thread_num = 4;
+    int heartbeat_s = 0;  // parse args
     int opt;
-    const char* str = "t:b";
+    const char* str = "p:s:h:b";
     while ((opt = getopt(argc, argv, str)) != -1) {
         switch (opt) {
-            case 't': {
-                num_thread = atoi(optarg) - 1;
-                std::cout << "Thread's num is " << num_thread + 1 << std::endl;
+            case 'p': {
+                process_num = atoi(optarg);
+                break;
+            }
+            case 's': {
+                sub_thread_num = atoi(optarg);
                 break;
             }
             case 'b': {
@@ -64,17 +69,35 @@ int main(int argc, char** argv) {
                 break;
         }
     }
+    std::cout << "Process num is " << process_num << std::endl;
+    std::cout << "Sub thread's num is " << sub_thread_num << std::endl;
+    pid_t pid;
+    std::atomic<int> sequence_ = 0;
+    std::string name = "Server0";
+    printf("WebServer 0 starts\n");
+    for (int i = 1; i < process_num; i++) {
+        ++sequence_;
+        pid = fork();
+        if (pid == 0) {
+            printf("WebServer %d starts\n", sequence_.load());
+            fflush(stdout);
+            name = "Server" + std::to_string(sequence_);
+            break;
+        }
+        if (pid < 0) printf("fork() failed.");
+    }
     EventLoop loop;
-    HttpServer server(&loop, 8000, num_thread, "WebServer");
+
+    HttpServer server(&loop, 8000, sub_thread_num, name, true);
     server.set_response_callback(OnRequest);
     // HeartBeat
-//    server.TurnOnHeartBeat(8);
+    if (heartbeat_s > 0) server.TurnOnHeartBeat(heartbeat_s);
     server.StartListening();
 
     p_server = &server;
     // Ctrl + C exit
     ::signal(SIGINT, sig_handler);
-    std::cout << "Server starts" << std::endl;
+
     loop.Loop();
     return 0;
 }

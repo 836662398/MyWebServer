@@ -146,7 +146,7 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
 void TcpConnection::Close() {
     if (state_ == kConnected) {
         state_ = kDisconnecting;
-        DEBUG(fmt::format("[{}] Close()", name_));
+        TRACE(fmt::format("[{}] Close()", name_));
         loop_->RunInLoop(
             std::bind(&TcpConnection::CloseInLoop, shared_from_this()));
     }
@@ -198,7 +198,7 @@ void TcpConnection::ConnDestroy() {
         channel_.DisableAll();  // can be omitted
         connection_callback_(shared_from_this());
     }
-    TRACE(fmt::format("[{}]ConnDestroy()", name_));
+    INFO(fmt::format("[{}] disconnects.", name_));
     channel_.Remove();
 }
 
@@ -268,7 +268,7 @@ void TcpConnection::HandleClose() {
         heartbeat_timer_ = nullptr;
     }
     if (state_ == kDisconnected) return;
-    INFO(fmt::format("[{}] disconnects.", name_));
+    TRACE(fmt::format("[{}] HandleClose().", name_));
     assert(state_ != kConnecting);
     // we don't close fd, leave it to Socket dtor
     state_ = kDisconnected;
