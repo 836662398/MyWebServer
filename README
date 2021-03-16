@@ -68,7 +68,6 @@
 
 此外，允许fork()多个进程。多个进程共同监听端口，负载均衡。
 
-
 ## Performance Comparison
 
 | QPS    | MyWebServer_ET | MyWebServer_LT | muduo  |
