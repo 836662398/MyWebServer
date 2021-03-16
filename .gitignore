@@ -10,3 +10,6 @@
 !*.h
 !CMakeLists.txt
 !Utility/spdlog
+!README
+!*.md
+!/pic.assets/*

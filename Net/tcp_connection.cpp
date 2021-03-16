@@ -175,6 +175,20 @@ void TcpConnection::ForceCloseInLoop() {
     }
 }
 
+void TcpConnection::Shutdown() {
+    if (state_ == kConnected) {
+        state_ = kDisconnecting;
+        loop_->RunInLoop(std::bind(&TcpConnection::ShutdownInLoop, this));
+    }
+}
+void TcpConnection::ShutdownInLoop() {
+    loop_->AssertInLoopThread();
+    if (!channel_.IsWriting()) {
+        // we are not writing
+        socket_.ShutdownWrite();
+    }
+}
+
 void TcpConnection::setTcpNoDelay(bool on) { socket_.setTcpNoDelay(on); }
 
 void TcpConnection::ConnEstablished() {
@@ -245,9 +259,10 @@ void TcpConnection::HandleWrite() {
                     loop_->QueueInLoop(std::bind(write_complete_callback_,
                                                  shared_from_this()));
                 }
-                // Close() has been called
+                // ShutdownInLoop() has been called
                 if (state_ == kDisconnecting) {
-                    CloseInLoop();
+                    ShutdownInLoop();
+                    // or CLoseInLoop();
                 }
                 break;
             }

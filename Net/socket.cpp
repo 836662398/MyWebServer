@@ -46,7 +46,7 @@ int Socket::Accept(SockAddress* peeraddr) {
 
 void Socket::ShutdownWrite() {
     if (shutdown(sockfd_, SHUT_WR) < 0) {
-        ERROR_P("Socket failed to ShutdownWrite.");
+        ERROR_P("shutdown()");
     }
 }
 

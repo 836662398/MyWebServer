@@ -1,9 +1,6 @@
 # MyWebServer
 
-
-Introduction
----
-
+## Introduction
 
 基于muduo网络库的C++ 高性能简单静态web服务器。
 
@@ -21,16 +18,14 @@ Introduction
 
 此外，日志模块使用了spdlog库，单元测试使用了gtest库。
 
-Envoirment
----
-
+## Envoirment
 
 - OS：Ubuntu18.04
 - Complier: g++ 7.5.0
 - Memory：8G
 
-Build
----
+## Build
+
 ```
 ./build.sh	#默认生成debug版本
 ```
@@ -39,8 +34,8 @@ Build
 
 如果未安装spdlog库，则使用header-only形式，会导致编译较慢。安装spdlog静态库，可以大大加快编译速度。
 
-Usage
----
+## Usage
+
 ```
 ./MyWebServer [-t thread_numbers] [-b]
 ```
@@ -49,8 +44,8 @@ Usage
 
 -t：开启线程数量，包括主线程，默认5线程。
 
----Technical points
----
+## Technical points
+
 -  Muti-reactor模式，使用 非阻塞IO + IO复用，分别实现了epoll LT/ET两种模式的网络库。
 -  使用了多线程，每个线程一个reactor，主线程仅负责accept连接，将建立的新连接分发给其他线程，使用 Round Robin 算法进行调度。
 -  一个线程负责多个连接，每个连接仅被一个线程负责。
@@ -60,15 +55,15 @@ Usage
 -  使用智能指针等RAII技术，尽量避免使用 new/delete，防止内存泄漏。
 -  使用自动状态机解析HTTP请求。
 
-Concurrency Model
----
+##  Concurrency Model
+
  ![img](https://img-blog.csdnimg.cn/img_convert/78e355f953ecd66c951398df7352cde7.png) 
 
 特点是one loop per thread，Base IO Thread负责accept(2)新连接，然后把新连接挂在某个sub IO Thread中（采用round-robin 轮询调度的方式来选择sub Reactor）。 线程数固定，IO Threads在进程初始化时创建。
 
 
-Performance Comparison
----
+## Performance Comparison
+
 | 服务器 | MyWebServer_ET | MyWebServer_LT | muduo |
 | ------ | -------------- | -------------- | ----- |
 | QPS    | 64370          | 60134          | 60498 |

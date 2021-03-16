@@ -50,6 +50,7 @@ class TcpConnection : noncopyable,
     // close util writing is finished
     void Close();
     void ForceClose();
+    void Shutdown();
 
     void setTcpNoDelay(bool on);
     void set_connection_callback(const ConnectionCallback& cb) {
@@ -100,6 +101,7 @@ class TcpConnection : noncopyable,
     void SendInLoop(const void* data, size_t len);
     void CloseInLoop();
     void ForceCloseInLoop();
+    void ShutdownInLoop();
     const char* PrintState();
 
     EventLoop* loop_;
