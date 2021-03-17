@@ -23,6 +23,7 @@
 - OS：Ubuntu18.04
 - Complier: g++ 7.5.0
 - Memory：8G
+- CPU：i5 10400
 - Thread Number：12
 
 ## Build
@@ -45,7 +46,7 @@
 
 -s：开启sub线程数量，不包括主线程，默认数量 4。
 
--p：开启进程数，大于1时，fork()多个进程监听端口，负载均衡。其中每一个进程都有 thread_numbers 个sub线程。
+-p：开启进程数，大于1时，fork()多个进程监听端口，负载均衡。其中每一个进程都有 thread_numbers 个sub线程。默认单进程。
 
 -h：开启心跳检测，超时时间为 heartbeat_seconds 。
 
@@ -68,7 +69,6 @@
 
 此外，允许fork()多个进程。多个进程共同监听端口，负载均衡。
 
-
 ## Performance Comparison
 
 | QPS    | MyWebServer_ET | MyWebServer_LT | muduo  |
@@ -77,3 +77,5 @@
 | 双进程 | 97 054         | 97 247         |        |
 
 单进程开启 5 个 Sub IO Thread，双进程每个进程开启3个 Sub IO Thread。
+
+[详细记录](https://github.com/836662398/MyWebServer/blob/ET/TestRecord.md)
