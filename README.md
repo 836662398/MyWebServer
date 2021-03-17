@@ -2,7 +2,7 @@
 
 ## Introduction
 
-基于muduo网络库的C++ 高性能简单静态web服务器。
+基于[muduo](https://github.com/chenshuo/muduo)网络库的C++ 高性能简单静态web服务器。
 
 对muduo进行了一些优化：
 
@@ -16,7 +16,7 @@
 
    ......
 
-此外，日志模块使用了spdlog库，单元测试使用了gtest库。
+此外，日志模块使用了[spdlog](https://github.com/gabime/spdlog)库，单元测试使用了[gtest](https://github.com/google/googletest)库。
 
 ## Envoirment
 
