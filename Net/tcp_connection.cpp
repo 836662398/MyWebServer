@@ -22,6 +22,7 @@ TcpConnection::TcpConnection(EventLoop *loop, const std::string &name,
       channel_(loop, sockfd),
       local_addr_(local),
       peer_addr_(peer),
+      is_closed_(false),
       heartbeat_timeout_s_(heartbeat_timeout_s) {
     assert(loop != nullptr);
     channel_.set_read_callback(std::bind(&TcpConnection::HandleRead, this));
@@ -146,6 +147,7 @@ void TcpConnection::SendInLoop(const void *data, size_t len) {
 void TcpConnection::Close() {
     if (state_ == kConnected) {
         state_ = kDisconnecting;
+        is_closed_ = true;
         TRACE(fmt::format("[{}] Close()", name_));
         loop_->RunInLoop(
             std::bind(&TcpConnection::CloseInLoop, shared_from_this()));
@@ -261,8 +263,10 @@ void TcpConnection::HandleWrite() {
                 }
                 // ShutdownInLoop() has been called
                 if (state_ == kDisconnecting) {
-                    ShutdownInLoop();
-                    // or CLoseInLoop();
+                    if(is_closed_)
+                        CloseInLoop();
+                    else
+                        ShutdownInLoop();
                 }
                 break;
             }

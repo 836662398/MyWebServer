@@ -118,6 +118,8 @@ class TcpConnection : noncopyable,
     CloseCallback close_callback_;
     Buffer input_buffer_;
     Buffer output_buffer_;
+    // to judge Close() or Shutdown()
+    bool is_closed_;
     std::shared_ptr<Timer> heartbeat_timer_;
     double heartbeat_timeout_s_;
     std::function<void()> heartbeat_callback_;
