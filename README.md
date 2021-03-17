@@ -63,7 +63,7 @@
 
 ##  Concurrency Model
 
- ![img](https://img-blog.csdnimg.cn/img_convert/78e355f953ecd66c951398df7352cde7.png) 
+ ![img](https://github.com/836662398/MyWebServer/blob/ET/pic.assets/model.png) 
 
 特点是one loop per thread，Base IO Thread负责accept(2)新连接，然后把新连接挂在某个sub IO Thread中（采用round-robin 轮询调度的方式来选择sub Reactor）。 线程数固定，IO Threads在进程初始化时创建。
 
