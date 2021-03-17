@@ -32,7 +32,7 @@ webbench -c 1000 -t 60 -2 http://127.0.0.1:8000/
 
 ![image](https://github.com/836662398/MyWebServer/blob/ET/pic.assets/60S/muduo_5.png)
 
-
+【PS】需要增加 进程最大文件描述符数量。
 
 
 
