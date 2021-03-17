@@ -22,7 +22,7 @@ Channel::~Channel() {
 }
 
 void Channel::HandleEvent() {
-    if (revents_ & EPOLLHUP) {
+    if (revents_ & EPOLLHUP && !(revents_ & EPOLLIN)) {
         if (close_callback_) close_callback_();
         ERROR("EPOLLHUP!");
         return;

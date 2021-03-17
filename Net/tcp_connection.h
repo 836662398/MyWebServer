@@ -113,6 +113,8 @@ class TcpConnection : noncopyable,
     CloseCallback close_callback_;
     Buffer input_buffer_;
     Buffer output_buffer_;
+    // to judge Close() or Shutdown()
+    bool is_closed_;
     // something could be used
     std::any something_;
 };
